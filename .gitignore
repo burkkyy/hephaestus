@@ -1,0 +1,12 @@
+.__pycache__/
+.vscode/
+
+temp/
+build/
+
+*.bin
+*.out
+*.o
+*.spv
+*.old
+
