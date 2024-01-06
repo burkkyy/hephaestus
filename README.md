@@ -7,7 +7,6 @@ make
 ```
 
 ## Dependencies
-Arch dependencies:
 - `base-devel`
 - `cmake`
 - `vulkan-devel`
