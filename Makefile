@@ -6,7 +6,7 @@ LDFLAGS :=-L./external/glfw/src
 
 app.bin: app.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
-
+	
 .PHONY: clean
 clean:
 	-rm app.bin
