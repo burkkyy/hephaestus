@@ -1,13 +1,11 @@
-CXX := g++
-CXXFLAGS :=-std=c++17 -O2 -Wall -Wextra
-CXX_INCLUDES := -I./external/glfw/include -I./external/glm/glm
-LDLIBS :=-lvulkan -lglfw3
-LDFLAGS :=-L./external/glfw/src
+default: all
 
-app.bin: app.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
-	
-.PHONY: clean
+.PHONY: all clean
+all:
+	@$(MAKE) --no-print-directory -C engine/
+	@$(MAKE) --no-print-directory -C testapp/
+
 clean:
-	-rm app.bin
+	-rm -r engine/build/
+	-rm -r testapp/build/
 
