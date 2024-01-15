@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include <core/test.hpp>
+#include <vulkan/window.hpp>
+#include <vulkan/device.hpp>
 
 int main(int argc, const char** argv) {
 	(void)argc;
@@ -20,6 +22,8 @@ int main(int argc, const char** argv) {
 		std::cout << "no\n";
 	}
 
+	hep::Window win(200, 200, "test");
+	hep::Device device(win);		
 	return 0;
 }
 
