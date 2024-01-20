@@ -9,6 +9,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "../util/util.hpp"
+
 #include <string>
 
 namespace hep {
@@ -19,16 +21,17 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 
-	Window(int width, int height, const std::string& name);
+	Window(u32 width, u32 height, const std::string& name);
 	~Window();
-
+	
+	VkExtent2D get_extent(){ return {width, height}; }
 	void create_surface(VkInstance instance, VkSurfaceKHR* surface);
 
 private:
-	static void resize_callback(GLFWwindow* window, int width, int height);
+	static void resize_callback(GLFWwindow* window, u32 width, u32 height);
 	void initialize();
 
-	int width, height;
+	u32 width, height;
 	std::string name;
 	GLFWwindow* window;
 };

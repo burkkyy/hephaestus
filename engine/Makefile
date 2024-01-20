@@ -19,12 +19,16 @@ hephaestus: $(SOURCE_DIRS)
 	ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_REAL) $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME)
 	ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME) $(shell pwd)/build/lib/$(HEPHAESTUS_LIBRARY)
 
-.PHONY: release dev clean
+.PHONY: release dev test clean
 release: CXXFLAGS += -DNDEBUG
 release: hephaestus
 
 dev: CXXFLAGS += -ggdb -DDEBUG
 dev: hephaestus
+
+test: hephaestus
+	$(MAKE) --no-print-directory -C test/
+	./test/build/test.bin
 
 clean:
 	-rm -r build/

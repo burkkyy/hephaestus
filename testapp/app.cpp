@@ -9,6 +9,7 @@
 #include <core/test.hpp>
 #include <vulkan/window.hpp>
 #include <vulkan/device.hpp>
+#include <vulkan/swapchain.hpp>
 
 int main(int argc, const char** argv) {
 	(void)argc;
@@ -24,6 +25,7 @@ int main(int argc, const char** argv) {
 
 	hep::Window win(200, 200, "test");
 	hep::Device device(win);		
+	hep::Swapchain swap(device, win.get_extent());
 	return 0;
 }
 

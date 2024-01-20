@@ -33,12 +33,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     (void)pCallback_data;
     (void)pUser_data;
     if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT){
-		log(LEVEL::FATAL, pCallback_data->pMessage);
+		log(LEVEL::ERROR, pCallback_data->pMessage);
         return VK_SUCCESS;  // Abort program
     } else if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT){
-        log(LEVEL::ERROR, pCallback_data->pMessage);
-    } else {
         log(LEVEL::WARNING, pCallback_data->pMessage);
+    } else {
+        log(LEVEL::TRACE, pCallback_data->pMessage);
     }
     return VK_FALSE;
 }
@@ -66,19 +66,18 @@ Device::Device(Window& window) : window{window} {
 Device::~Device(){
 	if(enable_validation_layers){
 		destroy_debug_utils_messenger_EXT(instance, debug_messenger, nullptr);
-		
-		log(LEVEL::INFO, "Destroyed Vulkan Debugger.");
+		log(LEVEL::TRACE, "Destroyed Vulkan Debugger.");
 	}
 
     vkDestroyDevice(device, nullptr);
-    log(LEVEL::INFO, "Destroyed Logical Device.");
+    log(LEVEL::TRACE, "Destroyed Logical Device.");
 
 	vkDestroySurfaceKHR(instance, surface, nullptr);
-   	log(LEVEL::INFO, "Destroyed VkSurfaceKHR.");
+   	log(LEVEL::TRACE, "Destroyed VkSurfaceKHR.");
 
     // Destroy vulkan instance last
     vkDestroyInstance(instance, nullptr);
-    log(LEVEL::INFO, "Destroyed VkInstance.");
+    log(LEVEL::TRACE, "Destroyed VkInstance.");
 }
 
 /**
@@ -133,7 +132,7 @@ void Device::create_vulkan_instance(){
 
     VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
     if(enable_validation_layers){
-       	log(LEVEL::INFO, "Validation Layers enabled.");
+       	log(LEVEL::INFO, "Vulkan validation layers are enabled.");
        	populate_debug_messenger_create_info(debug_create_info);
        	create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
     }	
@@ -143,6 +142,7 @@ void Device::create_vulkan_instance(){
        	log(LEVEL::FATAL, "Failed to create vulkan instance.");
     	throw std::exception();
 	}
+	log(LEVEL::TRACE, "Created VkInstance.");
 }
 
 /**
@@ -197,11 +197,11 @@ std::vector<const char*> Device::get_required_extensions(){
     std::vector<VkExtensionProperties> available_extensions(available_extension_count); // set up vector to hold VkExtensionProperties structs
     vkEnumerateInstanceExtensionProperties(nullptr, &available_extension_count, available_extensions.data());   // get VkExtensionProperties structs
 
-    log(LEVEL::INFO, "number of available extensions: ", available_extension_count);
+    log(LEVEL::TRACE, "Number of available extensions: ", available_extension_count);
     
 #ifndef NDEBUG
-    //VK_INFO("available extensions:");
-    //for(const auto& e : available_extensions){ std::cout << '\t' << e.extensionName << '\n'; }
+    log(LEVEL::TRACE, "Available extensions:");
+    for(const auto& e : available_extensions){ std::cout << '\t' << e.extensionName << '\n'; }
     std::cout << "Required extensions:\n";
     for(const auto& e : extensions){ std::cout << "\t" << e << '\n'; }
 #endif
@@ -236,11 +236,10 @@ void Device::setup_debug_messenger(){
 
    	VkResult result = create_debug_utils_messenger_EXT(instance, &create_info, nullptr, &debug_messenger);
    	if(result != VK_SUCCESS){
-   	    log(LEVEL::FATAL, "Failed to set up debug messenger.");
-   	    log(LEVEL::FATAL, "Error code: ", result);
+   	    log(LEVEL::FATAL, "Failed to set up debug messenger. Error code: ", result);
 		throw std::exception();
    	}
-   	log(LEVEL::FATAL, "Set up debug messenger.");
+   	log(LEVEL::TRACE, "Set up debug messenger.");
 }
 
 /**
@@ -291,7 +290,7 @@ void Device::pick_physical_device(){
 		log(LEVEL::FATAL, "Failed to find any physical devices.");
 		throw std::exception();
 	}
-	log(LEVEL::INFO, "Physical Devices count: ", count);
+	log(LEVEL::TRACE, "Physical Devices count: ", count);
 
    	// Get all physical devies
    	std::vector<VkPhysicalDevice> physical_devices(count);
@@ -312,7 +311,7 @@ void Device::pick_physical_device(){
 
    	VkPhysicalDeviceProperties properties;
    	vkGetPhysicalDeviceProperties(physical_device, &properties);
-   	log(LEVEL::INFO, "Physical Device: ", properties.deviceName);
+   	log(LEVEL::TRACE, "Physical Device: ", properties.deviceName);
 }
 
 /**
@@ -445,30 +444,33 @@ SwapChainSupportDetails Device::query_swapchain_support(VkPhysicalDevice physica
 void Device::create_logical_device(){
 	QueueFamilyIndices indices = find_queue_families(physical_device);
 
-	std::vector<VkDeviceQueueCreateInfo> create_infos;
-	f32 priority = 1.0f;
-
-	VkDeviceQueueCreateInfo device_queue_info = {};
-	device_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    device_queue_info.queueCount = 1;
-    device_queue_info.pQueuePriorities = &priority;
-    create_infos.push_back(device_queue_info);
+	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+	
+	f32 queue_priority = 1.0f;
 
 	// Create graphics family queue
-	device_queue_info.queueFamilyIndex = indices.graphics.value();
-	create_infos.push_back(device_queue_info);
+	VkDeviceQueueCreateInfo graphics_queue_info = {};
+	graphics_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	graphics_queue_info.queueFamilyIndex = indices.graphics.value();
+    graphics_queue_info.queueCount = 1;
+    graphics_queue_info.pQueuePriorities = &queue_priority;
+    queue_create_infos.push_back(graphics_queue_info);
 
 	// Create present family queue
-	device_queue_info.queueFamilyIndex = indices.present.value();
-	create_infos.push_back(device_queue_info);
+	VkDeviceQueueCreateInfo present_queue_info = {};
+	present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	present_queue_info.queueFamilyIndex = indices.present.value();
+	present_queue_info.queueCount = 1;
+	present_queue_info.pQueuePriorities = &queue_priority;
+	queue_create_infos.push_back(present_queue_info);
 
 	// TODO Enable some features
     VkPhysicalDeviceFeatures features = {};
 
     VkDeviceCreateInfo create_info = {};
     create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    create_info.queueCreateInfoCount = static_cast<uint32_t>(create_infos.size());
-    create_info.pQueueCreateInfos = create_infos.data();
+    create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+    create_info.pQueueCreateInfos = queue_create_infos.data();
     create_info.pEnabledFeatures = &features;
     create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
     create_info.ppEnabledExtensionNames = enabled_extensions.data();
@@ -480,9 +482,9 @@ void Device::create_logical_device(){
        	log(LEVEL::FATAL, "Failed to create logical device.");
     	throw std::exception();
     }
-    log(LEVEL::INFO, "Created Logical Device.");
-    log(LEVEL::INFO, "Created Graphics Queue.");
-    log(LEVEL::INFO, "Created Present Queue.");
+    log(LEVEL::TRACE, "Created Logical Device.");
+    log(LEVEL::TRACE, "Created Graphics Queue.");
+    log(LEVEL::TRACE, "Created Present Queue.");
     vkGetDeviceQueue(device, indices.graphics.value(), 0, &graphics_queue);
     vkGetDeviceQueue(device, indices.present.value(), 0, &present_queue);
 }

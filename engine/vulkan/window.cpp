@@ -6,11 +6,9 @@
 
 #include "window.hpp"
 
-#include "../util/logger.hpp"
-
 namespace hep {
 
-Window::Window(int width, int height, const std::string& name) : width{width}, height{height}, name{name} {
+Window::Window(u32 width, u32 height, const std::string& name) : width{width}, height{height}, name{name} {
 	initialize();
 }
 
@@ -27,7 +25,7 @@ void Window::create_surface(VkInstance instance, VkSurfaceKHR* surface){
 	log(LEVEL::TRACE, "Created VkSurfaceKHR.");
 }
 
-void Window::resize_callback(GLFWwindow* window, int width, int height){
+void Window::resize_callback(GLFWwindow* window, u32 width, u32 height){
 	(void)window;
 	(void)width;
 	(void)height;

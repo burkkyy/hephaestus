@@ -63,29 +63,19 @@ private:
     void initialize();
 
     void create_vulkan_instance();
-
     bool check_validation_layer_support();
-
     std::vector<const char*> get_required_extensions();
 
 	void populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& create_info);
-
 	void setup_debug_messenger();
-
 	VkResult create_debug_utils_messenger_EXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-
 	void destroy_debug_utils_messenger_EXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
     void pick_physical_device();
-
     bool is_physical_device_suitable(VkPhysicalDevice physical_device);
-
     QueueFamilyIndices find_queue_families(VkPhysicalDevice physical_device);
-
 	bool check_device_extension_support(VkPhysicalDevice physical_device);
-
 	SwapChainSupportDetails query_swapchain_support(VkPhysicalDevice physical_device);
-
     void create_logical_device();
 
     VkInstance instance;
