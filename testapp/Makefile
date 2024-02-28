@@ -6,11 +6,13 @@ LDFLAGS := -L../engine/build/lib/
 
 TARGET := build/app.bin
 
+all: $(TARGET)
+
 $(TARGET): app.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXINCLUDES) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-.PHONY: run clean
+.PHONY: run clean $(TARGET)
 run: $(TARGET)
 	@./$(TARGET)
 

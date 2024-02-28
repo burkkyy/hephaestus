@@ -7,7 +7,9 @@
 #pragma once
 
 #include "window.hpp"
+#include "util/util.hpp"
 
+#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include <vector>
@@ -16,6 +18,7 @@
 #include <set>
 
 namespace hep {
+namespace vul {
 
 /**
  * @brief Helper Struct 
@@ -57,7 +60,8 @@ public:
     VkSurfaceKHR get_surface() const { return surface; }
     VkQueue get_graphics_queue() const { return graphics_queue; }
     VkQueue get_present_queue() const { return present_queue; }
-    SwapChainSupportDetails get_swapchain_support() { return query_swapchain_support(physical_device); }
+    SwapChainSupportDetails get_swapchain_support(){ return query_swapchain_support(physical_device); }
+    QueueFamilyIndices get_queue_indices(){ return find_queue_families(physical_device); }
 
 private:
     void initialize();
@@ -99,5 +103,6 @@ private:
     };
 };
 
+}	// namespace vul
 }	// namespace hep
 

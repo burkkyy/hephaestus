@@ -9,11 +9,12 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "../util/util.hpp"
+#include "util/util.hpp"
 
 #include <string>
 
 namespace hep {
+namespace vul {
 
 class Window {
 public:
@@ -21,9 +22,11 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 
-	Window(u32 width, u32 height, const std::string& name);
+	Window(u32 width, u32 height, const std::string& name = "hephaestus");
 	~Window();
-	
+
+	bool should_close(){ return glfwWindowShouldClose(window); }
+
 	VkExtent2D get_extent(){ return {width, height}; }
 	void create_surface(VkInstance instance, VkSurfaceKHR* surface);
 
@@ -36,5 +39,6 @@ private:
 	GLFWwindow* window;
 };
 
+}	// namepace vul
 }	// namespace hep
 

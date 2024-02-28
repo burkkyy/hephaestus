@@ -1,6 +1,6 @@
 CXX := g++
-CXXFLAGS := -O2 -Wall -Wextra
-CXXINCLUDES := -I../ -I../include/
+CXXFLAGS := -O2 -Wall -Wextra -DNDEBUG
+CXXINCLUDES := -I../
 LDLIBS := -lhephaestus
 LDFLAGS := -L../build/lib/
 

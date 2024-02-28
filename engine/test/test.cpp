@@ -4,8 +4,9 @@
  * @date Nov 18, 2023
  */
 
-#include <vulkan/window.hpp>
-#include <vulkan/device.hpp>
+#include <vulkan_plugin/window.hpp>
+#include <vulkan_plugin/device.hpp>
+#include <vulkan_plugin/swapchain.hpp>
 #include <iostream>
 
 static int TESTS = 0;
@@ -40,12 +41,12 @@ int main(int argc, const char** argv){
 	});
 
 	RUN_TEST("Testing window", [](){
-		hep::Window window(100, 100, "testing");
+		hep::vul::Window window(100, 100, "testing");
 	});
 	
 	RUN_TEST("Testing device", [](){
-		hep::Window window(100, 100, "testing");
-		hep::Device device(window);
+		hep::vul::Window window(100, 100, "testing");
+		hep::vul::Device device(window);
 	});
 
 	RUN_TEST("Testing pipeline", [](){
@@ -53,7 +54,9 @@ int main(int argc, const char** argv){
 	});
 	
 	RUN_TEST("Testing swapchain", [](){
-
+        hep::vul::Window window(100, 100, "testing");
+        hep::vul::Device device(window);
+        hep::vul::Swapchain swapchain(device, window.get_extent());
 	});
 
     MSG("Finished testing.");

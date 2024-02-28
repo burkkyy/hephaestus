@@ -7,9 +7,13 @@
 #include "device.hpp"
 
 #include "window.hpp"
-#include "../util/util.hpp"
+#include "util/util.hpp"
+
+#include <set>
+#include <vulkan/vulkan.h>
 
 namespace hep {
+namespace vul {
 
 /**
  * @brief Vulkan debug callback function for handling validation layer messages.
@@ -33,7 +37,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     (void)pCallback_data;
     (void)pUser_data;
     if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT){
-		log(LEVEL::ERROR, pCallback_data->pMessage);
+        log(LEVEL::ERROR, pCallback_data->pMessage);
         return VK_SUCCESS;  // Abort program
     } else if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT){
         log(LEVEL::WARNING, pCallback_data->pMessage);
@@ -114,7 +118,7 @@ void Device::create_vulkan_instance(){
    	application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
    	application_info.pEngineName = "Hephaestus Vulkan Engine";
    	application_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-   	application_info.apiVersion = VK_API_VERSION_1_0;
+   	application_info.apiVersion = VK_API_VERSION_1_3;
 	
 	auto extensions = get_required_extensions();
 
@@ -283,7 +287,7 @@ void Device::destroy_debug_utils_messenger_EXT(VkInstance instance, VkDebugUtils
  */
 void Device::pick_physical_device(){
 	// Query number of physical devices
-	u32 count;
+	u32 count = 0;
 	vkEnumeratePhysicalDevices(instance, &count, nullptr);
 
 	if(count <= 0){
@@ -325,14 +329,15 @@ void Device::pick_physical_device(){
 bool Device::is_physical_device_suitable(VkPhysicalDevice physical_device){
    	QueueFamilyIndices indices = find_queue_families(physical_device);
    	bool extensions_support = check_device_extension_support(physical_device);
-
-   	/*
+    log(LEVEL::DEBUG, "Indices: ", indices.graphics.value(), " ", indices.present.value());
+   	
    	VkPhysicalDeviceProperties properties;
-   	vkGetPhysicalDeviceProperties(device, &properties);
-   	VkPhysicalDeviceFeatures features;
-   	vkGetPhysicalDeviceFeatures(device, &features);
-   	*/
-
+   	vkGetPhysicalDeviceProperties(physical_device, &properties);
+   	
+    VkPhysicalDeviceFeatures features;
+   	features.samplerAnisotropy = VK_TRUE;
+    vkGetPhysicalDeviceFeatures(physical_device, &features);
+   	
    	bool support_swapchain = false;
    	if(extensions_support){
        	SwapChainSupportDetails support = query_swapchain_support(physical_device);
@@ -356,7 +361,8 @@ QueueFamilyIndices Device::find_queue_families(VkPhysicalDevice physical_device)
    	// Get number of queue families available in device
    	u32 count = 0;
    	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &count, nullptr);
-    
+    log(LEVEL::DEBUG, "Physical device queue familiy count: ", count);
+
    	// Get queue family properties of device
    	std::vector<VkQueueFamilyProperties> queue_families(count);
    	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &count, queue_families.data());
@@ -445,24 +451,21 @@ void Device::create_logical_device(){
 	QueueFamilyIndices indices = find_queue_families(physical_device);
 
 	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
-	
+    std::set<u32> unique_queue_families = {
+        indices.graphics.value(),
+        indices.present.value()
+    };
 	f32 queue_priority = 1.0f;
 
-	// Create graphics family queue
-	VkDeviceQueueCreateInfo graphics_queue_info = {};
-	graphics_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	graphics_queue_info.queueFamilyIndex = indices.graphics.value();
-    graphics_queue_info.queueCount = 1;
-    graphics_queue_info.pQueuePriorities = &queue_priority;
-    queue_create_infos.push_back(graphics_queue_info);
-
-	// Create present family queue
-	VkDeviceQueueCreateInfo present_queue_info = {};
-	present_queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	present_queue_info.queueFamilyIndex = indices.present.value();
-	present_queue_info.queueCount = 1;
-	present_queue_info.pQueuePriorities = &queue_priority;
-	queue_create_infos.push_back(present_queue_info);
+    for(u32 queue : unique_queue_families){
+        log(LEVEL::TRACE, "Creating Queue Family: ", queue);
+	    VkDeviceQueueCreateInfo queue_create_info = {};
+	    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	    queue_create_info.queueFamilyIndex = queue;
+        queue_create_info.queueCount = 1;
+        queue_create_info.pQueuePriorities = &queue_priority;
+        queue_create_infos.push_back(queue_create_info);
+    }
 
 	// TODO Enable some features
     VkPhysicalDeviceFeatures features = {};
@@ -474,20 +477,27 @@ void Device::create_logical_device(){
     create_info.pEnabledFeatures = &features;
     create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
     create_info.ppEnabledExtensionNames = enabled_extensions.data();
-    create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layers.size());
-    create_info.ppEnabledLayerNames = enabled_layers.data();
+
+    if(enable_validation_layers){
+        create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layers.size());
+        create_info.ppEnabledLayerNames = enabled_layers.data();
+    } else {
+        create_info.enabledLayerCount = 0;
+    }
     
-	VkResult result = vkCreateDevice(physical_device, &create_info, nullptr, &device);
+    VkResult result = vkCreateDevice(physical_device, &create_info, nullptr, &device);
     if(result != VK_SUCCESS){
        	log(LEVEL::FATAL, "Failed to create logical device.");
     	throw std::exception();
     }
+
+    vkGetDeviceQueue(device, indices.graphics.value(), 0, &graphics_queue);
+    vkGetDeviceQueue(device, indices.present.value(), 0, &present_queue);
     log(LEVEL::TRACE, "Created Logical Device.");
     log(LEVEL::TRACE, "Created Graphics Queue.");
     log(LEVEL::TRACE, "Created Present Queue.");
-    vkGetDeviceQueue(device, indices.graphics.value(), 0, &graphics_queue);
-    vkGetDeviceQueue(device, indices.present.value(), 0, &present_queue);
 }
 
+}	// namespace vul
 }   // namespace hep
 

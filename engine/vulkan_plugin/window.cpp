@@ -7,6 +7,7 @@
 #include "window.hpp"
 
 namespace hep {
+namespace vul {
 
 Window::Window(u32 width, u32 height, const std::string& name) : width{width}, height{height}, name{name} {
 	initialize();
@@ -40,5 +41,6 @@ void Window::initialize(){
 	glfwSetWindowUserPointer(window, this);
 }
 
+}	// namespace vul
 }	// namespace hep
 

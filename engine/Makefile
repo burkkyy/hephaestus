@@ -1,7 +1,7 @@
 include config.mk
 include version.mk
 
-SOURCE_DIRS := vulkan/ core/
+SOURCE_DIRS := vulkan_plugin/ core/
 SOURCE_FILES := $(foreach _dir,$(SOURCE_DIRS),$(wildcard $(_dir)/*.cpp))
 OBJECT_FILES := $(patsubst %.cpp,build/obj/%.o,$(notdir $(SOURCE_FILES)))
 
