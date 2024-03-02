@@ -11,25 +11,38 @@ HEPHAESTUS_SONAME = $(HEPHAESTUS_LIBRARY).$(HEPHAESTUS_MAJOR)
 
 default: release
 
-hephaestus: $(SOURCE_DIRS)
+.PHONY: release
+release: CXXFLAGS += -DNDEBUG
+release: clean
 	@mkdir -p $(dir build/lib/)
-	@for dir in $(SOURCE_DIRS); do $(MAKE) --no-print-directory -C $$dir; done
+	@for dir in $(SOURCE_DIRS); do $(MAKE) --no-print-directory -C $$dir release; done
+	
 	$(CXX) $(CXXFLAGS) $(CXXINCLUDES) $(LDFLAGS) -shared $(OBJECT_FILES) -Wl,-soname,$(HEPHAESTUS_SONAME) -o build/lib/$(HEPHAESTUS_REAL) $(LDLIBS)
 	@# Symbolic link to soname for dynamic linker to use and other for compiling
+	@ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_REAL) $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME)
+	@ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME) $(shell pwd)/build/lib/$(HEPHAESTUS_LIBRARY)
+
+.PHONY: dev
+dev: CXXFLAGS += -ggdb -DDEBUG
+dev: clean
+	@mkdir -p $(dir build/lib/)
+	for dir in $(SOURCE_DIRS); do $(MAKE) --no-print-directory -C $$dir dev; done
+	
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDES) $(LDFLAGS) -shared $(OBJECT_FILES) -Wl,-soname,$(HEPHAESTUS_SONAME) -o build/lib/$(HEPHAESTUS_REAL) $(LDLIBS)
+	# Symbolic link to soname for dynamic linker to use and other for compiling
 	ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_REAL) $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME)
 	ln -sf $(shell pwd)/build/lib/$(HEPHAESTUS_SONAME) $(shell pwd)/build/lib/$(HEPHAESTUS_LIBRARY)
 
-.PHONY: release dev test clean
-release: CXXFLAGS += -DNDEBUG
-release: hephaestus
+.PHONY: debug
+debug: dev
+	$(MAKE) --no-print-directory -C debug/ run
 
-dev: CXXFLAGS += -ggdb -DDEBUG
-dev: hephaestus
+.PHONY: test
+test: release
+	@$(MAKE) --no-print-directory -C test/
+	@./test/build/test.bin
 
-test: hephaestus
-	$(MAKE) --no-print-directory -C test/
-	./test/build/test.bin
-
+.PHONY: clean
 clean:
 	-rm -r build/
 

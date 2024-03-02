@@ -9,13 +9,10 @@
 #include "window.hpp"
 #include "util/util.hpp"
 
-#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include <vector>
 #include <optional>
-#include <cstring>
-#include <set>
 
 namespace hep {
 namespace vul {

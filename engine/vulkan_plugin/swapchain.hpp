@@ -9,9 +9,9 @@
 #include "device.hpp"
 #include "util/util.hpp"
 
-#include <vector>
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
+
+#include <vector>
 
 namespace hep {
 namespace vul {

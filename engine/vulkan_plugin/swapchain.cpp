@@ -2,13 +2,11 @@
  * @file engine/vulkan/swapchain.cpp
  * @author Caleb Burke
  * @date Jan 16, 2024
+ * 
+ * TODO finish writing documentation
  */
 
 #include "swapchain.hpp"
-#include "device.hpp"
-
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
 
 #include <algorithm>
 
@@ -21,12 +19,18 @@ Swapchain::Swapchain(Device& device, VkExtent2D extent) : device{device}, extent
 
 Swapchain::~Swapchain(){
 	vkDestroySwapchainKHR(device.get_device(), swapchain, nullptr);
-	log(LEVEL::TRACE, "Destroyed VkSwapchainKHR.");
+    log::info("Destroyed VkSwapchainKHR.");
+
+    for(size_t i = 0; i < image_views.size(); i++){
+        vkDestroyImageView(device.get_device(), image_views[i], nullptr);
+        log::verbose("Destroyed VkImageView index: ", i);
+    }
 }
 
 void Swapchain::initialize(){
     swapchain_support = device.get_swapchain_support();
 	create_swapchain();
+    create_image_views();
 }
 
 void Swapchain::create_swapchain(){
@@ -44,47 +48,38 @@ void Swapchain::create_swapchain(){
 
     VkResult result = vkCreateSwapchainKHR(device.get_device(), &create_info, nullptr, &swapchain);
 	if(result != VK_SUCCESS){
-		log(LEVEL::FATAL, "Failed to create VkSwapchainKHR. Error code: ", result);
+        log::fatal("Failed to create VkSwapchainKHR. Error code: ", result);
 		throw std::exception();
 	}
-	log(LEVEL::TRACE, "Created VkSwapchainKHR.");
-    
+    log::info("Created VkSwapchainKHR.");
+     
+    log::debug("pQueueFamilyIndices[0]: ", create_info.pQueueFamilyIndices[0]);
+    log::debug("pQueueFamilyIndices[1]: ", create_info.pQueueFamilyIndices[1]);
+
     u32 image_count = 0;
     vkGetSwapchainImagesKHR(device.get_device(), swapchain, &image_count, nullptr);
     images.resize(image_count);
     vkGetSwapchainImagesKHR(device.get_device(), swapchain, &image_count, images.data());
-
+    
+    log::debug("pQueueFamilyIndices[0]: ", create_info.pQueueFamilyIndices[0]);
+    log::debug("pQueueFamilyIndices[1]: ", create_info.pQueueFamilyIndices[1]);
+    
     // NOTE these may be null
     image_format = create_info.imageFormat;
     image_extent = create_info.imageExtent;
 }
 
+/**
+ * @brief inits swapchain create info struct
+ * @param create_info Swapchain create info struct
+ *
+ * Fill in default values for a swapchain create_info struct. 
+ * Calling this function is strickly to **help** fill out the swapchain create info.
+ */
 void Swapchain::default_config(VkSwapchainCreateInfoKHR& create_info){
 	/*
 	https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSwapchainCreateInfoKHR.html
-	
-	typedef struct VkSwapchainCreateInfoKHR {
-    	VkStructureType                  sType;
-    	const void*                      pNext;
-    	VkSwapchainCreateFlagsKHR        flags;
-    	VkSurfaceKHR                     surface;
-    	uint32_t                         minImageCount;
-    	VkFormat                         imageFormat;
-    	VkColorSpaceKHR                  imageColorSpace;
-    	VkExtent2D                       imageExtent;
-    	uint32_t                         imageArrayLayers;
-    	VkImageUsageFlags                imageUsage;
-    	VkSharingMode                    imageSharingMode;
-    	uint32_t                         queueFamilyIndexCount;
-    	const uint32_t*                  pQueueFamilyIndices;
-    	VkSurfaceTransformFlagBitsKHR    preTransform;
-    	VkCompositeAlphaFlagBitsKHR      compositeAlpha;
-    	VkPresentModeKHR                 presentMode;
-    	VkBool32                         clipped;
-    	VkSwapchainKHR                   oldSwapchain;
-	} VkSwapchainCreateInfoKHR; 
 	*/
-    
     VkSurfaceFormatKHR format = get_surface_format();
 
 	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -115,7 +110,7 @@ VkSurfaceFormatKHR Swapchain::get_surface_format(){
             return available_format;
         }
     }
-    log(LEVEL::TRACE, "No available surface formats, choosing default.");
+    log::info("No available surface formats, choosing default.");
     return swapchain_support.formats[0];
 }
 
@@ -125,7 +120,7 @@ VkPresentModeKHR Swapchain::get_present_mode(){
             return present_mode;
         }
     }
-    log(LEVEL::TRACE, "Present mode MAILBOX not available, defaulting to FIFO.");
+    log::info("Present mode MAILBOX not available, defaulting to FIFO.");
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -156,10 +151,33 @@ u32 Swapchain::get_image_count(){
 void Swapchain::create_image_views(){
     image_views.resize(images.size());
     
-    for(VkImage image : images){
+    for(size_t i = 0; i < images.size(); i++){
+        /*
+        https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageViewCreateInfo.html
+        */
         VkImageViewCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        create_info.image = image;
+        create_info.pNext = nullptr; // default
+        create_info.flags = 0; // default
+        create_info.image = images[i];
+        create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        create_info.format = image_format;
+        create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY; // default
+        create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY; // default
+        create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY; // default
+        create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY; // default
+        create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        create_info.subresourceRange.baseMipLevel = 0;
+        create_info.subresourceRange.levelCount = 1;
+        create_info.subresourceRange.baseArrayLayer = 0;
+        create_info.subresourceRange.layerCount = 1;
+        
+        VkResult result = vkCreateImageView(device.get_device(), &create_info, nullptr, &image_views[i]);
+        if(result != VK_SUCCESS){
+            log::fatal("Failed to create image view. Vulkan error code: ", result);
+            throw std::exception();
+        }
+        log::verbose("Created Image view: ", i);
     }
 }
 
