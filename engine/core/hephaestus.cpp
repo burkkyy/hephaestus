@@ -24,6 +24,7 @@ void Instance::run(){
 	vul::Window window(500, 500);
 	vul::Device device(window);
 	vul::Swapchain swapchain(device, window.get_extent());
+    vul::Pipeline pipeline(device);
 
 	while(!window.should_close()){
 		glfwPollEvents();

@@ -9,6 +9,7 @@
 #include "window.hpp"
 #include "device.hpp"
 #include "swapchain.hpp"
+#include "pipeline.hpp"
 
 namespace hep {
 

@@ -75,6 +75,8 @@ void Swapchain::create_swapchain(){
  *
  * Fill in default values for a swapchain create_info struct. 
  * Calling this function is strickly to **help** fill out the swapchain create info.
+ *
+ * @note Sets default config specific to this engine, not default values
  */
 void Swapchain::default_config(VkSwapchainCreateInfoKHR& create_info){
 	/*
