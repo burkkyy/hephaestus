@@ -17,6 +17,7 @@
 #pragma once
 
 #include "device.hpp"
+#include "../util/types.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -31,7 +32,7 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    Pipeline(Device& device);
+    Pipeline(Device& device, std::vector<char> vertex_shader_spv, std::vector<char> fragment_shader_spv);
     ~Pipeline();
 
 private:
@@ -49,6 +50,8 @@ private:
     void default_color_blend();
     void default_dynamic_state();
 
+    VkShaderModule create_shader_module(const std::vector<char>& code);
+
     Device& device;
     VkPipeline pipeline;
     VkGraphicsPipelineCreateInfo pipeline_create_info;
@@ -61,6 +64,9 @@ private:
     VkPipelineColorBlendAttachmentState color_attachment;
     VkPipelineColorBlendStateCreateInfo color_blend_state_create_info;
     VkPipelineDynamicStateCreateInfo dynamic_state_create_info;
+
+    VkShaderModule vertex_shader;
+    VkShaderModule fragment_shader;
 };
 
 } // namespace vul

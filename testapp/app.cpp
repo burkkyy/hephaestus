@@ -4,7 +4,7 @@
  * @date Jan 6, 2024
  */
 
-#include <core/hephaestus.hpp>
+#include <hephaestus.hpp>
 
 #include <iostream>
 #include <stdexcept>

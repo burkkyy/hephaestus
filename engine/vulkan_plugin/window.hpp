@@ -9,7 +9,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "util/util.hpp"
+#include "../util/types.hpp"
 
 #include <string>
 

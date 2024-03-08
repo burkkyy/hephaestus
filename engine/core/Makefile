@@ -2,7 +2,7 @@ include ../config.mk
 
 SOURCE_FILES := $(wildcard *.cpp)
 HEADER_FILES := $(wildcard *.hpp)
-OBJECT_FILES := $(patsubst %.cpp,../build/obj/%.o,$(notdir $(SOURCE_FILES)))
+OBJECT_FILES := $(patsubst %.cpp,../build/%.o,$(notdir $(SOURCE_FILES)))
 
 default: release
 

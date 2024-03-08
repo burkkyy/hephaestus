@@ -6,7 +6,8 @@
 
 #pragma once
 
-#include "vulkan_plugin/plugin.hpp"
+#include <vector>
+#include <string>
 
 namespace hep {
 
@@ -25,6 +26,10 @@ public:
 
 private:
 	void initialize();
+    void initialize_vulkan();
+
+    std::vector<char> read_shader_file(const std::string& filepath);
+    //void compile_shader(const std::string& filepath);
 };
 
 }	// namespace hep

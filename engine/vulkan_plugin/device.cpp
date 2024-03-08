@@ -8,6 +8,8 @@
 
 #include "device.hpp"
 
+#include "../util/logger.hpp"
+
 #include <cstring>
 #include <set>
 
@@ -52,7 +54,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
  * @param[in] window
  */
 Device::Device(Window& window) : window{window} {
-	initialize();
+    initialize();
 }
 	
 /**

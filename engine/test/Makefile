@@ -10,10 +10,12 @@ $(TARGET): test.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXINCLUDES) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-.PHONY: run clean
+.PHONY: run
+run: clean
 run: $(TARGET)
 	@./$(TARGET)
 
+.PHONY: clean
 clean:
 	-rm -r *.bin *.o build/
 

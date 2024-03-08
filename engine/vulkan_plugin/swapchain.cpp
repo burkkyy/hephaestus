@@ -8,6 +8,8 @@
 
 #include "swapchain.hpp"
 
+#include "../util/logger.hpp"
+
 #include <algorithm>
 
 namespace hep {
@@ -154,9 +156,7 @@ void Swapchain::create_image_views(){
     image_views.resize(images.size());
     
     for(size_t i = 0; i < images.size(); i++){
-        /*
-        https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageViewCreateInfo.html
-        */
+        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageViewCreateInfo.html
         VkImageViewCreateInfo create_info = {};
         create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         create_info.pNext = nullptr; // default
@@ -181,6 +181,10 @@ void Swapchain::create_image_views(){
         }
         log::verbose("Created Image view: ", i);
     }
+}
+
+void Swapchain::create_render_pass(){
+    
 }
 
 }	// namespace vul

@@ -6,15 +6,29 @@
 
 #include "pipeline.hpp"
 
+#include "../util/logger.hpp"
+
+#include <stdexcept>
+
 namespace hep {
 namespace vul {
 
-Pipeline::Pipeline(Device& device) : device{device} {
+Pipeline::Pipeline(Device& device, std::vector<char> vertex_shader_spv, std::vector<char> fragment_shader_spv) : device{device} {
+    vertex_shader = create_shader_module(vertex_shader_spv);
+    log::info("Created vertex shader module.");
+    
+    fragment_shader = create_shader_module(fragment_shader_spv);
+    log::info("Created fragment shader module.");
+    
     initialize();
 }
 
 Pipeline::~Pipeline(){
+    vkDestroyShaderModule(device.get_device(), vertex_shader, nullptr);
+    log::info("Destroyed vertex shader module.");
 
+    vkDestroyShaderModule(device.get_device(), fragment_shader, nullptr);
+    log::info("Destroyed fragment shader module.");
 }
 
 void Pipeline::initialize(){
@@ -23,11 +37,37 @@ void Pipeline::initialize(){
 
 void Pipeline::create_pipeline(){
     default_config();
+
+    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPipelineShaderStageCreateInfo.html
+    VkPipelineShaderStageCreateInfo vertex_stage_create_info = {};
+    vertex_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertex_stage_create_info.pNext = nullptr;
+    vertex_stage_create_info.flags = 0;
+    vertex_stage_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertex_stage_create_info.module = vertex_shader;
+    vertex_stage_create_info.pName = "main";
+    vertex_stage_create_info.pSpecializationInfo = nullptr;
+    
+    VkPipelineShaderStageCreateInfo fragment_stage_create_info = {};
+    fragment_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragment_stage_create_info.pNext = nullptr;
+    fragment_stage_create_info.flags = 0;
+    fragment_stage_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragment_stage_create_info.module = fragment_shader;
+    fragment_stage_create_info.pName = "main";
+    fragment_stage_create_info.pSpecializationInfo = nullptr;
+
+    VkPipelineShaderStageCreateInfo shader_stages[] = {
+        vertex_stage_create_info,
+        fragment_stage_create_info
+    };
+
+    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkGraphicsPipelineCreateInfo.html
     pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipeline_create_info.pNext = nullptr;
     pipeline_create_info.flags = 0;
-    pipeline_create_info.stageCount = 0;
-    pipeline_create_info.pStages = nullptr;
+    pipeline_create_info.stageCount = 2;
+    pipeline_create_info.pStages = shader_stages;
     pipeline_create_info.pVertexInputState = &vertex_input_create_info;
     pipeline_create_info.pInputAssemblyState = &input_assemly_create_info;
     pipeline_create_info.pTessellationState = nullptr;
@@ -192,6 +232,25 @@ void Pipeline::default_dynamic_state(){
     dynamic_state_create_info.flags = 0;
     dynamic_state_create_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
     dynamic_state_create_info.pDynamicStates = dynamic_states.data();
+}
+
+VkShaderModule Pipeline::create_shader_module(const std::vector<char>& code){
+    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkShaderModuleCreateInfo.html
+    VkShaderModuleCreateInfo create_info = {};
+    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    create_info.pNext = nullptr;
+    create_info.flags = 0;
+    create_info.codeSize = code.size();
+    create_info.pCode = reinterpret_cast<const u32*>(code.data());
+    
+    VkShaderModule shader_module;
+
+    VkResult result = vkCreateShaderModule(device.get_device(), &create_info, nullptr, &shader_module);
+    if(result != VK_SUCCESS){
+        throw std::runtime_error("Faild to create shader module");
+    }
+
+    return shader_module;
 }
 
 } // namespace vul

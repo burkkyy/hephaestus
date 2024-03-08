@@ -7,7 +7,6 @@
 #pragma once
 
 #include "window.hpp"
-#include "util/util.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -43,6 +42,7 @@ public:
     Device& operator=(Device&&) = delete;
 	
 	Device(Window& window);
+
 	~Device();
 
     VkDevice get_device() const { return device; }

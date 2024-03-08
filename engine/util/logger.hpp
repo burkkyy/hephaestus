@@ -30,7 +30,7 @@ enum class LEVEL {
 	WARNING,
 	INFO,
 	VERBOSE,
-	DEBUG,
+	DEBUGGING,
 	TRACE,
 };
 
@@ -63,7 +63,7 @@ void log(LEVEL level, Args... args){
         case LEVEL::VERBOSE:
             LOG_PREFIX_VERBOSE;
             break;
-        //case LEVEL::DEBUG:
+        //case LEVEL::DEBUGGING:
         //    LOG_PREFIX_DEBUG;
         //    break;
         case LEVEL::TRACE:
@@ -107,7 +107,7 @@ void debug(const char* file, u16 line, Args... args){
 #else
     (void)file;
     (void)line;
-    (void)std::initializer_list<int>{((void)args, 0)...};   
+    (void)std::initializer_list<int>{((void)args, 0)...};
 #endif // !NDEBUG
 }
 // trick
