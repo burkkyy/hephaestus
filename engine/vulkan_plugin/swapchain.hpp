@@ -7,11 +7,10 @@
 #pragma once
 
 #include "device.hpp"
-#include "util/util.hpp"
+
+#include <vulkan/vulkan.h>
 
 #include <vector>
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 namespace hep {
 namespace vul {
@@ -25,6 +24,8 @@ public:
 	Swapchain(Device& device, VkExtent2D extent);
 	~Swapchain();
 
+    VkRenderPass get_render_pass() const { return render_pass; };
+
 private:
 	void initialize();
 	void create_swapchain();
@@ -36,6 +37,7 @@ private:
     u32 get_image_count();
 
     void create_image_views();
+    void create_render_pass();
 
 	Device& device;
     SwapChainSupportDetails swapchain_support;
@@ -44,8 +46,8 @@ private:
     std::vector<VkImage> images;
     VkFormat image_format;
     VkExtent2D image_extent;
-
     std::vector<VkImageView> image_views;
+    VkRenderPass render_pass;
 };
 
 }	// namespace vul

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace hep {
 
 using u8 = uint8_t;

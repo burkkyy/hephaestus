@@ -2,9 +2,13 @@
  * @file engine/vulkan/window.cpp
  * @author Caleb Burke
  * @date Jan 8, 2024
+ * 
+ * TODO write documentation!!!
  */
 
 #include "window.hpp"
+
+#include "../util/logger.hpp"
 
 namespace hep {
 namespace vul {
@@ -20,10 +24,10 @@ Window::~Window(){
 
 void Window::create_surface(VkInstance instance, VkSurfaceKHR* surface){
 	if(glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS){
-		log(LEVEL::FATAL, "Failed to create VkSurfaceKHR.");
+        log::fatal("Failed to create VkSurfaceKHR.");
 		throw std::exception();
 	}
-	log(LEVEL::TRACE, "Created VkSurfaceKHR.");
+    log::info("Created VkSurfaceKHR.");
 }
 
 void Window::resize_callback(GLFWwindow* window, u32 width, u32 height){

@@ -1,5 +1,5 @@
 /**
- * @file engine/vulkan/device.hpp
+ * @file engine/vulkan_plugin/device.hpp
  * @author Caleb Burke
  * @date Jan 14th, 2024
  */
@@ -7,31 +7,23 @@
 #pragma once
 
 #include "window.hpp"
-#include "util/util.hpp"
 
-#include <cstdint>
 #include <vulkan/vulkan.h>
 
 #include <vector>
 #include <optional>
-#include <cstring>
-#include <set>
 
 namespace hep {
 namespace vul {
 
-/**
- * @brief Helper Struct 
- */
+// Helper Struct 
 struct SwapChainSupportDetails {
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> present_modes;
     VkSurfaceCapabilitiesKHR capabilities;
 };
 
-/**
- * @brief Helper Struct
- */
+// Helper Struct
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphics;
     std::optional<uint32_t> present;
@@ -41,9 +33,6 @@ struct QueueFamilyIndices {
     }
 };
 
-/**
- * @brief Creates interface with vulkan device
- */
 class Device {
 public:
     // Prevents copying and moving

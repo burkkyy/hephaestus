@@ -2,15 +2,16 @@
  * @file engine/vulkan/device.hpp
  * @author Caleb Burke
  * @date Jan 14, 2024
+ * 
+ * TODO finish writing documentation
  */
 
 #include "device.hpp"
 
-#include "window.hpp"
-#include "util/util.hpp"
+#include "../util/logger.hpp"
 
+#include <cstring>
 #include <set>
-#include <vulkan/vulkan.h>
 
 namespace hep {
 namespace vul {
@@ -37,12 +38,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     (void)pCallback_data;
     (void)pUser_data;
     if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT){
-        log(LEVEL::ERROR, pCallback_data->pMessage);
+        log::error(pCallback_data->pMessage);
         return VK_SUCCESS;  // Abort program
     } else if(m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT){
-        log(LEVEL::WARNING, pCallback_data->pMessage);
+        log::warning(pCallback_data->pMessage);
     } else {
-        log(LEVEL::TRACE, pCallback_data->pMessage);
+        log::verbose(pCallback_data->pMessage);
     }
     return VK_FALSE;
 }
@@ -53,7 +54,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
  * @param[in] window
  */
 Device::Device(Window& window) : window{window} {
-	initialize();
+    initialize();
 }
 	
 /**
@@ -70,18 +71,18 @@ Device::Device(Window& window) : window{window} {
 Device::~Device(){
 	if(enable_validation_layers){
 		destroy_debug_utils_messenger_EXT(instance, debug_messenger, nullptr);
-		log(LEVEL::TRACE, "Destroyed Vulkan Debugger.");
+        log::info("Destroyed Vulkan Debugger.");
 	}
 
     vkDestroyDevice(device, nullptr);
-    log(LEVEL::TRACE, "Destroyed Logical Device.");
+    log::info("Destroyed Logical Device.");
 
 	vkDestroySurfaceKHR(instance, surface, nullptr);
-   	log(LEVEL::TRACE, "Destroyed VkSurfaceKHR.");
+    log::info("Destroyed VkSurfaceKHR.");
 
     // Destroy vulkan instance last
     vkDestroyInstance(instance, nullptr);
-    log(LEVEL::TRACE, "Destroyed VkInstance.");
+    log::info("Destroyed VkInstance.");
 }
 
 /**
@@ -91,7 +92,6 @@ Device::~Device(){
  * TODO create command pool
  *
  * @note Called by constructor
- * @return void
  */
 void Device::initialize(){
 	create_vulkan_instance();
@@ -107,7 +107,7 @@ void Device::initialize(){
  */
 void Device::create_vulkan_instance(){
 	if(enable_validation_layers && !check_validation_layer_support()){
-		log(LEVEL::ERROR, "Validation layers requested but not available.");
+        log::fatal("Validation layers requested but not available.");
 		throw std::exception();
 	}
 
@@ -136,17 +136,17 @@ void Device::create_vulkan_instance(){
 
     VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
     if(enable_validation_layers){
-       	log(LEVEL::INFO, "Vulkan validation layers are enabled.");
+        log::info("Vulkan validation layers are enabled.");
        	populate_debug_messenger_create_info(debug_create_info);
        	create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
     }	
 
     VkResult result = vkCreateInstance(&create_info, nullptr, &instance);
     if(result != VK_SUCCESS){
-       	log(LEVEL::FATAL, "Failed to create vulkan instance.");
+        log::fatal("Failed to create vulkan instance.");
     	throw std::exception();
 	}
-	log(LEVEL::TRACE, "Created VkInstance.");
+    log::info("Created VkInstance.");
 }
 
 /**
@@ -201,10 +201,10 @@ std::vector<const char*> Device::get_required_extensions(){
     std::vector<VkExtensionProperties> available_extensions(available_extension_count); // set up vector to hold VkExtensionProperties structs
     vkEnumerateInstanceExtensionProperties(nullptr, &available_extension_count, available_extensions.data());   // get VkExtensionProperties structs
 
-    log(LEVEL::TRACE, "Number of available extensions: ", available_extension_count);
+    log::verbose("Number of available extensions: ", available_extension_count);
     
 #ifndef NDEBUG
-    log(LEVEL::TRACE, "Available extensions:");
+    log::verbose("Available extensions:");
     for(const auto& e : available_extensions){ std::cout << '\t' << e.extensionName << '\n'; }
     std::cout << "Required extensions:\n";
     for(const auto& e : extensions){ std::cout << "\t" << e << '\n'; }
@@ -240,10 +240,10 @@ void Device::setup_debug_messenger(){
 
    	VkResult result = create_debug_utils_messenger_EXT(instance, &create_info, nullptr, &debug_messenger);
    	if(result != VK_SUCCESS){
-   	    log(LEVEL::FATAL, "Failed to set up debug messenger. Error code: ", result);
+        log::fatal("Failed to set up debug messenger. Error code: ", result);
 		throw std::exception();
    	}
-   	log(LEVEL::TRACE, "Set up debug messenger.");
+    log::info("Set up debug messenger.");
 }
 
 /**
@@ -291,10 +291,10 @@ void Device::pick_physical_device(){
 	vkEnumeratePhysicalDevices(instance, &count, nullptr);
 
 	if(count <= 0){
-		log(LEVEL::FATAL, "Failed to find any physical devices.");
+        log::fatal("Failed to find any physical devices.");
 		throw std::exception();
 	}
-	log(LEVEL::TRACE, "Physical Devices count: ", count);
+    log::verbose("Physical Devices count: ", count);
 
    	// Get all physical devies
    	std::vector<VkPhysicalDevice> physical_devices(count);
@@ -309,13 +309,13 @@ void Device::pick_physical_device(){
 	}
 
    	if(physical_device == VK_NULL_HANDLE){
-       	log(LEVEL::FATAL, "Failed to find a suitable physical device");
+        log::fatal("Failed to find a suitable physical device");
        	throw std::exception();
    	}
 
    	VkPhysicalDeviceProperties properties;
    	vkGetPhysicalDeviceProperties(physical_device, &properties);
-   	log(LEVEL::TRACE, "Physical Device: ", properties.deviceName);
+    log::verbose("Physical Device: ", properties.deviceName);
 }
 
 /**
@@ -329,7 +329,6 @@ void Device::pick_physical_device(){
 bool Device::is_physical_device_suitable(VkPhysicalDevice physical_device){
    	QueueFamilyIndices indices = find_queue_families(physical_device);
    	bool extensions_support = check_device_extension_support(physical_device);
-    log(LEVEL::DEBUG, "Indices: ", indices.graphics.value(), " ", indices.present.value());
    	
    	VkPhysicalDeviceProperties properties;
    	vkGetPhysicalDeviceProperties(physical_device, &properties);
@@ -361,7 +360,7 @@ QueueFamilyIndices Device::find_queue_families(VkPhysicalDevice physical_device)
    	// Get number of queue families available in device
    	u32 count = 0;
    	vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &count, nullptr);
-    log(LEVEL::DEBUG, "Physical device queue familiy count: ", count);
+    log::debug("Physical device queue familiy count: ", count);
 
    	// Get queue family properties of device
    	std::vector<VkQueueFamilyProperties> queue_families(count);
@@ -458,7 +457,7 @@ void Device::create_logical_device(){
 	f32 queue_priority = 1.0f;
 
     for(u32 queue : unique_queue_families){
-        log(LEVEL::TRACE, "Creating Queue Family: ", queue);
+        log::verbose("Creating Queue Family: ", queue);
 	    VkDeviceQueueCreateInfo queue_create_info = {};
 	    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	    queue_create_info.queueFamilyIndex = queue;
@@ -487,15 +486,15 @@ void Device::create_logical_device(){
     
     VkResult result = vkCreateDevice(physical_device, &create_info, nullptr, &device);
     if(result != VK_SUCCESS){
-       	log(LEVEL::FATAL, "Failed to create logical device.");
+        log::fatal("Failed to create logical device.");
     	throw std::exception();
     }
 
     vkGetDeviceQueue(device, indices.graphics.value(), 0, &graphics_queue);
     vkGetDeviceQueue(device, indices.present.value(), 0, &present_queue);
-    log(LEVEL::TRACE, "Created Logical Device.");
-    log(LEVEL::TRACE, "Created Graphics Queue.");
-    log(LEVEL::TRACE, "Created Present Queue.");
+    log::info("Created Logical Device.");
+    log::verbose("Created Graphics Queue.");
+    log::verbose("Created Present Queue.");
 }
 
 }	// namespace vul
