@@ -1,18 +1,17 @@
-default: all
+CXX := g++
+CXXFLAGS := -std=c++20 -O2 -Wall -Wextra
 
-.PHONY: testapp
-testapp:
-	@$(MAKE) --no-print-directory -C engine/ dev
-	@$(MAKE) --no-print-directory -C testapp/
-	./testapp/build/app.bin
+TARGET = app.bin
 
-.PHONY: all
-all:
-	@$(MAKE) --no-print-directory -C engine/
-	@$(MAKE) --no-print-directory -C testapp/
+default: $(TARGET)
+
+$(TARGET): app.cpp
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+.PHONY: run
+run: $(TARGET)
+	@./$(TARGET)
 
 .PHONY: clean
 clean:
-	-rm -r engine/build/
-	-rm -r testapp/build/
-
+	@-rm -r *.bin *.o build/
