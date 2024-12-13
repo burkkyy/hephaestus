@@ -2,13 +2,20 @@ CXX := g++
 CXXFLAGS := -std=c++20 -O2 -Wall -Wextra
 LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
-TARGET = app.bin
-default: $(TARGET)
+.PHONY: TARGET
+default: TARGET
 
-include dependencies.mk
+OBJECT_FILES := build/window.o
 
-$(TARGET): app.cpp GLFW
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) $< -o $@ $(LDFLAGS)
+build/window.o: src/window.cpp src/window.hpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+
+include libraries.mk
+
+TARGET: GLFW app.bin
+app.bin: app.cpp $(OBJECT_FILES)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) $^ -o $@ $(LDFLAGS)
 
 .PHONY: run
 run: $(TARGET)
