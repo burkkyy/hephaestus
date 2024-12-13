@@ -1,5 +1,5 @@
 /**
- * @file engine/util/logger.hpp
+ * @file src/util/logger.hpp
  * @author Caleb Burke
  * @date Jan 8, 2024
  *
@@ -10,8 +10,6 @@
  * log::fatal("fatal message")
  * log::info("Infomation message")
  *
- * TODO Create logger singleton class
- * TODO Impl log queuing and dequeuing
  * TODO Impl some form of log error handling
  */
 
@@ -118,4 +116,3 @@ void trace(Args... args){ log(LEVEL::TRACE, args...); }
 
 }	// namespace log
 }	// namespace hep
-

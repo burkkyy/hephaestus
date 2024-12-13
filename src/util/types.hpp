@@ -1,5 +1,5 @@
 /**
- * @file engine/util/types.hpp
+ * @file src/util/types.hpp
  * @author Caleb Burke
  * @date Nov 18, 2023
  */
@@ -24,4 +24,3 @@ using f32 = float;
 using f64 = double;
 
 }	// namespace hep
-
