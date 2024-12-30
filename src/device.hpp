@@ -1,12 +1,18 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
+#include <optional>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "window.hpp"
 
 namespace hep {
+
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphicsFamily;
+
+  bool isComplete() { return graphicsFamily.has_value(); }
+};
 
 class Device {
  public:
@@ -21,29 +27,24 @@ class Device {
  private:
   // Vulkan validation layer debugger funcs
   void populateDebugMessengerCreateInfo(
-      VkDebugUtilsMessengerCreateInfoEXT& create_info);
+      vk::DebugUtilsMessengerCreateInfoEXT& create_info);
   void setupDebugMessenger();
-  VkResult createDebugUtilsMessengerEXT(
-      VkInstance instance,
-      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-      const VkAllocationCallbacks* pAllocator,
-      VkDebugUtilsMessengerEXT* pDebugMessenger);
-  void destroyDebugUtilsMessengerEXT(VkInstance instance,
-                                     VkDebugUtilsMessengerEXT debugMessenger,
-                                     const VkAllocationCallbacks* pAllocator);
 
   bool checkValidationLayerSupport();
   std::vector<const char*> getRequiredExtensions();
   void createVulkanInstance();
 
-  bool isPhysicalDeviceSuitable(VkPhysicalDevice physical_device);
+  QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
+  bool isPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
   void pickPhysicalDevice();
 
-  VkInstance instance;
+  vk::UniqueInstance instance;
   VkDebugUtilsMessengerEXT debug_messenger;
+
   Window& window;
-  VkSurfaceKHR surface;
-  VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+  vk::SurfaceKHR surface;
+
+  vk::PhysicalDevice physical_device = VK_NULL_HANDLE;
 
 #ifdef NDEBUG
   const bool enable_validation_layers = false;
