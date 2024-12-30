@@ -24,7 +24,7 @@ void Window::createSurface(const vk::Instance& instance,
   }
 
   surface = vk::SurfaceKHR(rawSurface);
-  log::info("Created vk::SurfaceKHR.");
+  log::verbose("Created vk::SurfaceKHR.");
 }
 
 void Window::resizeCallback(GLFWwindow* window, u32 width, u32 height) {
