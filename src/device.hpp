@@ -1,48 +1,61 @@
 #pragma once
 
+#include <optional>
 #include <vector>
-
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 #include "window.hpp"
 
 namespace hep {
 
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphicsFamily;
+
+  bool isComplete() { return graphicsFamily.has_value(); }
+};
+
 class Device {
-public:
+ public:
   Device(const Device&) = delete;
   Device& operator=(const Device&) = delete;
   Device(Device&&) = delete;
   Device& operator=(Device&&) = delete;
 
   Device(Window& window);
-	~Device();
+  ~Device();
 
+ private:
   // Vulkan validation layer debugger funcs
-  void populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& create_info);
-	void setup_debug_messenger();
-	VkResult create_debug_utils_messenger_EXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-	void destroy_debug_utils_messenger_EXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+  void populateDebugMessengerCreateInfo(
+      vk::DebugUtilsMessengerCreateInfoEXT& create_info);
+  void setupDebugMessenger();
 
-private:
-  bool check_validation_layer_support();
-  std::vector<const char*> get_required_extensions();
-  void create_vulkan_instance();
+  bool checkValidationLayerSupport();
+  std::vector<const char*> getRequiredExtensions();
+  void createVulkanInstance();
 
-  VkInstance instance;
+  QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
+  bool isPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
+  void pickPhysicalDevice();
+
+  vk::UniqueInstance instance;
   VkDebugUtilsMessengerEXT debug_messenger;
+
   Window& window;
+  vk::SurfaceKHR surface;
+
+  vk::PhysicalDevice physical_device = VK_NULL_HANDLE;
 
 #ifdef NDEBUG
   const bool enable_validation_layers = false;
   const std::vector<const char*> enabled_layers;
 #else
   const bool enable_validation_layers = true;
-  const std::vector<const char*> enabled_layers = {"VK_LAYER_KHRONOS_validation"};
+  const std::vector<const char*> enabled_layers = {
+      "VK_LAYER_KHRONOS_validation"};
 #endif
   const std::vector<const char*> enabled_extensions = {
-      VK_KHR_SWAPCHAIN_EXTENSION_NAME
-  };
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
-}	// namespace hep
+}  // namespace hep
