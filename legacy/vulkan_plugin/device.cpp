@@ -1,29 +1,4 @@
-#include "device.hpp"
 
-#include <cstring>
-#include <set>
-
-#include "../util/logger.hpp"
-
-namespace hep {
-namespace vul {
-
-void Device::initialize() {
-  create_vulkan_instance();
-  setup_debug_messenger();
-  window.create_surface(instance, &surface);
-  pick_physical_device();
-  create_logical_device();
-}
-
-/**
- * @brief Find the queue families of a physical device
- *
- * Find the queue families of a physical device.
- *
- * @param[in] physical_device The physical device we search in
- * @return void
- */
 QueueFamilyIndices Device::find_queue_families(
     VkPhysicalDevice physical_device) {
   QueueFamilyIndices indices;
