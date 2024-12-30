@@ -121,19 +121,23 @@ std::vector<const char*> Device::getRequiredExtensions() {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
   }
 
+#ifndef NDEBUG
   u32 available_extension_count = 0;
-  vk::enumerateInstanceExtensionProperties(nullptr, &available_extension_count,
-                                           nullptr);  // get # of extentions
+  vk::Result result = vk::enumerateInstanceExtensionProperties(
+      nullptr, &available_extension_count, nullptr);
+
+  if (result != vk::Result::eSuccess) { throw std::exception(); }
+
   std::vector<vk::ExtensionProperties> available_extensions(
-      available_extension_count);  // set up vector to hold
-                                   // VkExtensionProperties structs
-  vk::enumerateInstanceExtensionProperties(
-      nullptr, &available_extension_count,
-      available_extensions.data());  // get VkExtensionProperties structs
+      available_extension_count);
+
+  result = vk::enumerateInstanceExtensionProperties(
+      nullptr, &available_extension_count, available_extensions.data());
+
+  if (result != vk::Result::eSuccess) { throw std::exception(); }
 
   log::verbose("Number of available extensions: ", available_extension_count);
 
-#ifndef NDEBUG
   log::verbose("Available extensions:");
   for (const auto& e : available_extensions) {
     std::cout << '\t' << e.extensionName << '\n';
@@ -141,6 +145,7 @@ std::vector<const char*> Device::getRequiredExtensions() {
   std::cout << "Required extensions:\n";
   for (const auto& e : extensions) { std::cout << "\t" << e << '\n'; }
 #endif
+
   return extensions;
 }
 
@@ -165,7 +170,7 @@ void Device::createVulkanInstance() {
 
   try {
     instance = vk::createInstanceUnique(createInfo, nullptr);
-  } catch (vk::SystemError err) {
+  } catch (const vk::SystemError& err) {
     throw std::runtime_error("Failed to create instance!");
   }
 }
