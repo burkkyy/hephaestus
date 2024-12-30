@@ -14,13 +14,17 @@ Window::~Window() {
   glfwTerminate();
 }
 
-void Window::createSurface(VkInstance instance, VkSurfaceKHR* surface) {
-  if (glfwCreateWindowSurface(instance, window, nullptr, surface) !=
-      VK_SUCCESS) {
-    log::fatal("Failed to create VkSurfaceKHR.");
+void Window::createSurface(const vk::Instance& instance,
+                           vk::SurfaceKHR& surface) {
+  VkSurfaceKHR rawSurface;
+  if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), window,
+                              nullptr, &rawSurface) != VK_SUCCESS) {
+    log::fatal("Failed to create vk::SurfaceKHR.");
     throw std::exception();
   }
-  log::info("Created VkSurfaceKHR.");
+
+  surface = vk::SurfaceKHR(rawSurface);
+  log::info("Created vk::SurfaceKHR.");
 }
 
 void Window::resizeCallback(GLFWwindow* window, u32 width, u32 height) {

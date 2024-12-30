@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
-
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#include <string>
+#include <vulkan/vulkan.hpp>
 
 #include "util/types.hpp"
 
@@ -19,8 +20,8 @@ class Window {
 
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
-  VkExtent2D getExtent() { return {width, height}; }
-  void createSurface(VkInstance instance, VkSurfaceKHR *surface);
+  vk::Extent2D getExtent() { return {width, height}; }
+  void createSurface(const vk::Instance &instance, vk::SurfaceKHR &surface);
 
  private:
   static void resizeCallback(GLFWwindow *window, u32 width, u32 height);
