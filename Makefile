@@ -5,7 +5,11 @@ LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXran
 .PHONY: TARGET
 default: TARGET
 
-OBJECT_FILES := build/window.o
+OBJECT_FILES := build/window.o build/device.o
+
+build/device.o: src/device.cpp src/device.hpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
 
 build/window.o: src/window.cpp src/window.hpp
 	@mkdir -p $(dir $@)
