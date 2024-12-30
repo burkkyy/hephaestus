@@ -1,20 +1,13 @@
-/**
- * @file src/window.hpp
- * @author Caleb Burke
- * @date Jan 8, 2024
- */
-
 #pragma once
+
+#include <string>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include "util/types.hpp"
 
-#include <string>
-
 namespace hep {
-namespace vul {
 
 class Window {
 public:
@@ -38,5 +31,4 @@ private:
 	GLFWwindow* window;
 };
 
-}	// namepace vul
 }	// namespace hep

@@ -1,17 +1,8 @@
-/**
- * @file src/window.cpp
- * @author Caleb Burke
- * @date Jan 8, 2024
- * 
- * TODO write documentation!!!
- */
-
 #include "window.hpp"
 
 #include "util/logger.hpp"
 
 namespace hep {
-namespace vul {
 
 Window::Window(u32 width, u32 height, const std::string& name) : width{width}, height{height}, name{name} {
 	initialize();
@@ -45,5 +36,4 @@ void Window::initialize(){
 	glfwSetWindowUserPointer(window, this);
 }
 
-}	// namespace vul
 }	// namespace hep
