@@ -14,7 +14,7 @@ int main(int argc, const char** argv) {
 	(void)argv;
 	std::cout << __FILE__ << "::" << __LINE__ << '\n';
 
-	hep::vul::Window win(200, 200);
+	hep::Window win(200, 200);
 
 	while(!win.shouldClose()) {
     glfwPollEvents();
