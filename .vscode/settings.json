@@ -22,6 +22,10 @@
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools"
   },
+  "files.exclude": {
+    "**/lib/**": true
+  },
+  "C_Cpp.default.includePath": ["!**/lib/**"],
   "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, AllowShortBlocksOnASingleLine: Always }",
   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, AllowShortBlocksOnASingleLine: Always }",
   "files.associations": {
