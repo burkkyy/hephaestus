@@ -2,15 +2,17 @@
 
 #include <string.h>
 
+#include <set>
+
 #include "util/logger.hpp"
 
 namespace hep {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
-debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
-               VkDebugUtilsMessageTypeFlagsEXT m_type,
-               const VkDebugUtilsMessengerCallbackDataEXT* pCallback_data,
-               void* pUser_data) {
+debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
+              VkDebugUtilsMessageTypeFlagsEXT m_type,
+              const VkDebugUtilsMessengerCallbackDataEXT* pCallback_data,
+              void* pUser_data) {
   (void)m_type;
   (void)pCallback_data;
   (void)pUser_data;
@@ -53,24 +55,22 @@ Device::Device(Window& window) : window{window} {
   setupDebugMessenger();
   window.createSurface(*instance, surface);
   pickPhysicalDevice();
-  // create_logical_device();
+  createLogicalDevice();
 }
 
 Device::~Device() {
-  if (enable_validation_layers) {
-    destroyDebugUtilsMessengerEXT(instance.get(), debug_messenger, nullptr);
+  if (this->enableValidationLayers) {
+    destroyDebugUtilsMessengerEXT(this->instance.get(), this->debugMessenger,
+                                  nullptr);
     log::verbose("Destroyed Vulkan Debugger.");
   }
 
-  // vkDestroyDevice(device, nullptr);
-  // log::verbose("Destroyed Logical Device.");
-
-  vkDestroySurfaceKHR(instance.get(), surface, nullptr);
+  this->instance->destroySurfaceKHR(surface);
   log::verbose("Destroyed VkSurfaceKHR.");
 }
 
 void Device::setupDebugMessenger() {
-  if (!enable_validation_layers) return;
+  if (!this->enableValidationLayers) return;
 
   auto createInfo = vk::DebugUtilsMessengerCreateInfoEXT(
       vk::DebugUtilsMessengerCreateFlagsEXT(),
@@ -80,30 +80,30 @@ void Device::setupDebugMessenger() {
       vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
           vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
           vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-      debug_callback, nullptr);
+      debugCallback, nullptr);
 
   if (createDebugUtilsMessengerEXT(
           *instance,
           reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(
               &createInfo),
-          nullptr, &debug_messenger) != VK_SUCCESS) {
+          nullptr, &this->debugMessenger) != VK_SUCCESS) {
     throw std::runtime_error("failed to set up debug callback!");
   }
 }
 
 bool Device::checkValidationLayerSupport() {
-  auto available_layers = vk::enumerateInstanceLayerProperties();
-  for (const char* layer_name : enabled_layers) {
-    bool layer_found = false;
+  auto availableLayers = vk::enumerateInstanceLayerProperties();
+  for (const char* layerName : enabledLayers) {
+    bool layerFound = false;
 
-    for (const auto& layer_properties : available_layers) {
-      if (strcmp(layer_name, layer_properties.layerName) == 0) {
-        layer_found = true;
+    for (const auto& layerProperties : availableLayers) {
+      if (strcmp(layerName, layerProperties.layerName) == 0) {
+        layerFound = true;
         break;
       }
     }
 
-    if (!layer_found) { return false; }
+    if (!layerFound) { return false; }
   }
 
   return true;
@@ -117,7 +117,7 @@ std::vector<const char*> Device::getRequiredExtensions() {
   std::vector<const char*> extensions(glfw_extensions,
                                       glfw_extensions + glfw_extension_count);
 
-  if (enable_validation_layers) {
+  if (enableValidationLayers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
   }
 
@@ -150,7 +150,7 @@ std::vector<const char*> Device::getRequiredExtensions() {
 }
 
 void Device::createVulkanInstance() {
-  if (enable_validation_layers && !checkValidationLayerSupport()) {
+  if (this->enableValidationLayers && !checkValidationLayerSupport()) {
     log::fatal("Validation layers requested but not available.");
     throw std::exception();
   }
@@ -165,8 +165,8 @@ void Device::createVulkanInstance() {
       vk::InstanceCreateFlags(), &app_info, 0, nullptr,
       static_cast<uint32_t>(extensions.size()), extensions.data());
 
-  createInfo.enabledLayerCount = static_cast<uint32_t>(enabled_layers.size());
-  createInfo.ppEnabledLayerNames = enabled_layers.data();
+  createInfo.enabledLayerCount = static_cast<uint32_t>(enabledLayers.size());
+  createInfo.ppEnabledLayerNames = enabledLayers.data();
 
   try {
     instance = vk::createInstanceUnique(createInfo, nullptr);
@@ -179,14 +179,21 @@ QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice device) {
   QueueFamilyIndices indices;
   auto queueFamilies = device.getQueueFamilyProperties();
   int i = 0;
+
   for (const auto& queueFamily : queueFamilies) {
     if (queueFamily.queueCount > 0 &&
         queueFamily.queueFlags & vk::QueueFlagBits::eGraphics) {
       indices.graphicsFamily = i;
     }
+
+    if (queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, surface)) {
+      indices.presentFamily = i;
+    }
+
     if (indices.isComplete()) { break; }
     i++;
   }
+
   return indices;
 }
 
@@ -197,30 +204,70 @@ bool Device::isPhysicalDeviceSuitable(const vk::PhysicalDevice& device) {
 
 void Device::pickPhysicalDevice() {
   // Get all physical devies
-  std::vector<vk::PhysicalDevice> physical_devices =
+  std::vector<vk::PhysicalDevice> physicalDevices =
       instance->enumeratePhysicalDevices();
 
-  if (physical_devices.empty()) {
+  if (physicalDevices.empty()) {
     log::fatal("Failed to find any physical devices.");
     throw std::exception();
   }
-  log::verbose("Physical Devices count: ", physical_devices.size());
+  log::verbose("Physical Devices count: ", physicalDevices.size());
 
   // Select first physical device that is suitable
-  for (const auto& device : physical_devices) {
+  for (const auto& device : physicalDevices) {
     if (isPhysicalDeviceSuitable(device)) {
-      physical_device = device;
+      this->physicalDevice = device;
       break;
     }
   }
 
-  if (physical_device == VK_NULL_HANDLE) {
+  if (this->physicalDevice == VK_NULL_HANDLE) {
     log::fatal("Failed to find a suitable physical device");
     throw std::exception();
   }
 
-  vk::PhysicalDeviceProperties properties = physical_device.getProperties();
+  vk::PhysicalDeviceProperties properties =
+      this->physicalDevice.getProperties();
   log::verbose("Physical Device: ", properties.deviceName);
+}
+
+void Device::createLogicalDevice() {
+  QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
+
+  std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+  std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
+                                            indices.presentFamily.value()};
+
+  float queuePriority = 1.0f;
+
+  for (uint32_t queueFamily : uniqueQueueFamilies) {
+    queueCreateInfos.push_back(
+        {vk::DeviceQueueCreateFlags(), queueFamily, 1, &queuePriority});
+  }
+
+  auto deviceFeatures = vk::PhysicalDeviceFeatures();
+  auto createInfo = vk::DeviceCreateInfo(
+      vk::DeviceCreateFlags(), static_cast<uint32_t>(queueCreateInfos.size()),
+      queueCreateInfos.data());
+  createInfo.pEnabledFeatures = &deviceFeatures;
+  createInfo.enabledExtensionCount = 0;
+
+  if (this->enableValidationLayers) {
+    createInfo.enabledLayerCount =
+        static_cast<uint32_t>(this->enabledLayers.size());
+    createInfo.ppEnabledLayerNames = this->enabledLayers.data();
+  }
+
+  try {
+    device = physicalDevice.createDeviceUnique(createInfo);
+    log::verbose("created vk::Device.");
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create logical device.");
+    throw std::exception();
+  }
+
+  this->graphicsQueue = device->getQueue(indices.graphicsFamily.value(), 0);
+  this->presentQueue = device->getQueue(indices.presentFamily.value(), 0);
 }
 
 }  // namespace hep

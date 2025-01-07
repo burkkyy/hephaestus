@@ -10,8 +10,17 @@ namespace hep {
 
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
+  std::optional<uint32_t> presentFamily;
 
-  bool isComplete() { return graphicsFamily.has_value(); }
+  bool isComplete() {
+    return graphicsFamily.has_value() && presentFamily.has_value();
+  }
+};
+
+struct SwapchainSupportDetails {
+  std::vector<vk::SurfaceFormatKHR> formats;
+  std::vector<vk::PresentModeKHR> present_modes;
+  vk::SurfaceCapabilitiesKHR capabilities;
 };
 
 class Device {
@@ -24,10 +33,15 @@ class Device {
   Device(Window& window);
   ~Device();
 
+  vk::SurfaceKHR getSurface() const { return surface; }
+  vk::Queue getGraphicsQueue() const { return graphicsQueue; }
+  vk::Queue getPresentQueue() const { return presentQueue; }
+
+  QueueFamilyIndices getQueueIndices() {
+    return findQueueFamilies(this->physicalDevice);
+  }
+
  private:
-  // Vulkan validation layer debugger funcs
-  void populateDebugMessengerCreateInfo(
-      vk::DebugUtilsMessengerCreateInfoEXT& create_info);
   void setupDebugMessenger();
 
   bool checkValidationLayerSupport();
@@ -38,23 +52,29 @@ class Device {
   bool isPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
   void pickPhysicalDevice();
 
+  void createLogicalDevice();
+
   vk::UniqueInstance instance;
-  VkDebugUtilsMessengerEXT debug_messenger;
+  VkDebugUtilsMessengerEXT debugMessenger;
 
   Window& window;
   vk::SurfaceKHR surface;
 
-  vk::PhysicalDevice physical_device = VK_NULL_HANDLE;
+  vk::PhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  vk::UniqueDevice device;
+
+  vk::Queue graphicsQueue;
+  vk::Queue presentQueue;
 
 #ifdef NDEBUG
-  const bool enable_validation_layers = false;
-  const std::vector<const char*> enabled_layers;
+  const bool enableValidationLayers = false;
+  const std::vector<const char*> enabledLayers;
 #else
-  const bool enable_validation_layers = true;
-  const std::vector<const char*> enabled_layers = {
+  const bool enableValidationLayers = true;
+  const std::vector<const char*> enabledLayers = {
       "VK_LAYER_KHRONOS_validation"};
 #endif
-  const std::vector<const char*> enabled_extensions = {
+  const std::vector<const char*> enabledExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
