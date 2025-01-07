@@ -1,4 +1,33 @@
 {
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.minimap.enabled": false,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "editor.tabSize": 2,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "window.confirmSaveUntitledWorkspace": false,
+  "[sql]": {
+    "editor.defaultFormatter": "bradymholt.pgformatter"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "files.exclude": {
+    "**/lib/**": true
+  },
+  "C_Cpp.default.includePath": ["!**/lib/**"],
+  "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, AllowShortBlocksOnASingleLine: Always }",
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, AllowShortBlocksOnASingleLine: Always }",
   "files.associations": {
     "array": "cpp",
     "atomic": "cpp",
@@ -61,6 +90,7 @@
     "text_encoding": "cpp",
     "cinttypes": "cpp",
     "typeinfo": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "expected": "cpp"
   }
 }
