@@ -197,9 +197,29 @@ QueueFamilyIndices Device::findQueueFamilies(vk::PhysicalDevice device) {
   return indices;
 }
 
+bool Device::checkDeviceExtensionSupport(const vk::PhysicalDevice& device) {
+  std::set<std::string> requiredExtensions(this->enabledExtensions.begin(),
+                                           this->enabledExtensions.end());
+
+  for (const auto& extension : device.enumerateDeviceExtensionProperties()) {
+    requiredExtensions.erase(extension.extensionName);
+  }
+
+  return requiredExtensions.empty();
+}
+
 bool Device::isPhysicalDeviceSuitable(const vk::PhysicalDevice& device) {
   QueueFamilyIndices indices = findQueueFamilies(device);
-  return indices.isComplete();
+
+  bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+  bool swapchainAdequate = false;
+  if (extensionsSupported) {
+    SwapchainSupportDetails swapchainSupport = querySwapchainSupport(device);
+    swapchainAdequate = !swapchainSupport.formats.empty() &&
+                        !swapchainSupport.presentModes.empty();
+  }
+  return indices.isComplete() && extensionsSupported && swapchainAdequate;
 }
 
 void Device::pickPhysicalDevice() {
@@ -250,7 +270,10 @@ void Device::createLogicalDevice() {
       vk::DeviceCreateFlags(), static_cast<uint32_t>(queueCreateInfos.size()),
       queueCreateInfos.data());
   createInfo.pEnabledFeatures = &deviceFeatures;
-  createInfo.enabledExtensionCount = 0;
+
+  createInfo.enabledExtensionCount =
+      static_cast<uint32_t>(this->enabledExtensions.size());
+  createInfo.ppEnabledExtensionNames = this->enabledExtensions.data();
 
   if (this->enableValidationLayers) {
     createInfo.enabledLayerCount =
@@ -268,6 +291,16 @@ void Device::createLogicalDevice() {
 
   this->graphicsQueue = device->getQueue(indices.graphicsFamily.value(), 0);
   this->presentQueue = device->getQueue(indices.presentFamily.value(), 0);
+}
+
+SwapchainSupportDetails Device::querySwapchainSupport(
+    vk::PhysicalDevice device) {
+  SwapchainSupportDetails details;
+  details.capabilities = device.getSurfaceCapabilitiesKHR(surface);
+  details.formats = device.getSurfaceFormatsKHR(surface);
+  details.presentModes = device.getSurfacePresentModesKHR(surface);
+
+  return details;
 }
 
 }  // namespace hep
