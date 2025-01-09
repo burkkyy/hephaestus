@@ -7,20 +7,20 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "src/window.hpp"
 #include "src/device.hpp"
+#include "src/swapchain.hpp"
+#include "src/window.hpp"
 
 int main(int argc, const char** argv) {
-	(void)argc;
-	(void)argv;
-	std::cout << __FILE__ << "::" << __LINE__ << '\n';
+  (void)argc;
+  (void)argv;
+  std::cout << __FILE__ << "::" << __LINE__ << '\n';
 
-	hep::Window win(200, 200);
-	hep::Device device(win);
+  hep::Window win(200, 200);
+  hep::Device device(win);
+  hep::Swapchain swapchain(device, win.getExtent());
 
-	while(!win.shouldClose()) {
-    glfwPollEvents();
-  }
+  while (!win.shouldClose()) { glfwPollEvents(); }
 
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
