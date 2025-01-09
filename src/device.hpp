@@ -19,7 +19,7 @@ struct QueueFamilyIndices {
 
 struct SwapchainSupportDetails {
   std::vector<vk::SurfaceFormatKHR> formats;
-  std::vector<vk::PresentModeKHR> present_modes;
+  std::vector<vk::PresentModeKHR> presentModes;
   vk::SurfaceCapabilitiesKHR capabilities;
 };
 
@@ -33,12 +33,17 @@ class Device {
   Device(Window& window);
   ~Device();
 
+  const vk::Device* get() const { return &this->device.get(); }
   vk::SurfaceKHR getSurface() const { return surface; }
   vk::Queue getGraphicsQueue() const { return graphicsQueue; }
   vk::Queue getPresentQueue() const { return presentQueue; }
 
   QueueFamilyIndices getQueueIndices() {
     return findQueueFamilies(this->physicalDevice);
+  }
+
+  SwapchainSupportDetails getSwapchainSupport() {
+    return querySwapchainSupport(this->physicalDevice);
   }
 
  private:
@@ -49,10 +54,13 @@ class Device {
   void createVulkanInstance();
 
   QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
+  bool checkDeviceExtensionSupport(const vk::PhysicalDevice& device);
   bool isPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
   void pickPhysicalDevice();
 
   void createLogicalDevice();
+
+  SwapchainSupportDetails querySwapchainSupport(vk::PhysicalDevice device);
 
   vk::UniqueInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
