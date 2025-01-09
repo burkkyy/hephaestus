@@ -10,10 +10,16 @@ namespace hep {
 Swapchain::Swapchain(Device& device, vk::Extent2D extent)
     : device{device}, extent{extent} {
   setDefaultCreateInfo();
-  create();
+  createSwapchain();
+  createImageViews();
 }
 
 Swapchain::~Swapchain() {
+  for (auto imageView : imageViews) {
+    device.get()->destroyImageView(imageView);
+  }
+  log::verbose("Destroyed all vk::ImageView's.");
+
   this->device.get()->destroySwapchainKHR(this->swapchain);
   log::verbose("Destroyed vk::SwapchainKHR.");
 }
@@ -33,47 +39,78 @@ void Swapchain::setDefaultCreateInfo() {
     imageCount = swapchainSupport.capabilities.maxImageCount;
   }
 
-  this->createInfo = {vk::SwapchainCreateFlagsKHR(),
-                      this->device.getSurface(),
-                      imageCount,
-                      surfaceFormat.format,
-                      surfaceFormat.colorSpace,
-                      this->extent,
-                      1,
-                      vk::ImageUsageFlagBits::eColorAttachment};
+  this->swapchainCreateInfo = {vk::SwapchainCreateFlagsKHR(),
+                               this->device.getSurface(),
+                               imageCount,
+                               surfaceFormat.format,
+                               surfaceFormat.colorSpace,
+                               this->extent,
+                               1,
+                               vk::ImageUsageFlagBits::eColorAttachment};
 
   QueueFamilyIndices indices = this->device.getQueueIndices();
   uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(),
                                    indices.presentFamily.value()};
 
   if (indices.graphicsFamily != indices.presentFamily) {
-    createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-    createInfo.queueFamilyIndexCount = 2;
-    createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    swapchainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
+    swapchainCreateInfo.queueFamilyIndexCount = 2;
+    swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
   } else {
-    createInfo.imageSharingMode = vk::SharingMode::eExclusive;
+    swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
   }
 
-  createInfo.preTransform = swapchainSupport.capabilities.currentTransform;
-  createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-  createInfo.presentMode = presentMode;
-  createInfo.clipped = VK_TRUE;
+  swapchainCreateInfo.preTransform =
+      swapchainSupport.capabilities.currentTransform;
+  swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+  swapchainCreateInfo.presentMode = presentMode;
+  swapchainCreateInfo.clipped = VK_TRUE;
 
-  createInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
+  swapchainCreateInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
 
   this->imageFormat = surfaceFormat.format;
 }
 
-void Swapchain::create() {
+void Swapchain::createSwapchain() {
   try {
-    this->swapchain = device.get()->createSwapchainKHR(createInfo);
+    this->swapchain =
+        this->device.get()->createSwapchainKHR(this->swapchainCreateInfo);
     log::verbose("created vk::SwapchainKHR");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create swapchain");
     throw std::runtime_error("failed to create swapchain");
   }
 
-  this->images = device.get()->getSwapchainImagesKHR(this->swapchain);
+  this->images = this->device.get()->getSwapchainImagesKHR(this->swapchain);
+}
+
+void Swapchain::createImageViews() {
+  this->imageViews.resize(this->images.size());
+
+  for (size_t i = 0; i < this->images.size(); i++) {
+    vk::ImageViewCreateInfo createInfo = {};
+    createInfo.image = this->images[i];
+    createInfo.viewType = vk::ImageViewType::e2D;
+    createInfo.format = imageFormat;
+    createInfo.components.r = vk::ComponentSwizzle::eIdentity;
+    createInfo.components.g = vk::ComponentSwizzle::eIdentity;
+    createInfo.components.b = vk::ComponentSwizzle::eIdentity;
+    createInfo.components.a = vk::ComponentSwizzle::eIdentity;
+    createInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    createInfo.subresourceRange.baseMipLevel = 0;
+    createInfo.subresourceRange.levelCount = 1;
+    createInfo.subresourceRange.baseArrayLayer = 0;
+    createInfo.subresourceRange.layerCount = 1;
+
+    try {
+      this->imageViews[i] = this->device.get()->createImageView(createInfo);
+    } catch (const vk::SystemError& err) {
+      log::fatal("failed to create all vk::ImageView");
+      throw std::runtime_error("failed to create all vk::ImageView");
+    }
+  }
+
+  log::verbose("created all vk::ImageView's");
 }
 
 vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(
