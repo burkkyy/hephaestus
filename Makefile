@@ -5,7 +5,11 @@ LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXran
 .PHONY: TARGET
 default: TARGET
 
-OBJECT_FILES := build/window.o build/device.o build/swapchain.o
+OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o
+
+build/pipeline.o: src/pipeline.cpp src/pipeline.hpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
 
 build/swapchain.o: src/swapchain.cpp src/swapchain.hpp
 	@mkdir -p $(dir $@)
