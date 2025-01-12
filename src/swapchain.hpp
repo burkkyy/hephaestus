@@ -23,6 +23,7 @@ class Swapchain {
   void createSwapchain();
   void createImageViews();
   void createRenderPass();
+  void createFramebuffers();
 
   vk::SurfaceFormatKHR chooseSurfaceFormat(
       const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -39,6 +40,7 @@ class Swapchain {
   std::vector<vk::ImageView> imageViews;
 
   vk::RenderPass renderPass;
+  std::vector<vk::Framebuffer> framebuffers;
 };
 
 }  // namespace hep

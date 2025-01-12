@@ -12,13 +12,19 @@ Swapchain::Swapchain(Device& device, vk::Extent2D extent)
   setDefaultCreateInfo();
   createSwapchain();
   createImageViews();
+  createRenderPass();
+  createFramebuffers();
 }
 
 Swapchain::~Swapchain() {
+  for (auto framebuffer : this->framebuffers) {
+    this->device.get()->destroyFramebuffer(framebuffer);
+  }
+
   this->device.get()->destroyRenderPass(this->renderPass);
 
   for (auto imageView : imageViews) {
-    device.get()->destroyImageView(imageView);
+    this->device.get()->destroyImageView(imageView);
   }
   log::verbose("Destroyed all vk::ImageView's.");
 
@@ -112,7 +118,7 @@ void Swapchain::createImageViews() {
     }
   }
 
-  log::verbose("created all vk::ImageView's");
+  log::verbose("created all vk::ImageView");
 }
 
 void Swapchain::createRenderPass() {
@@ -142,10 +148,33 @@ void Swapchain::createRenderPass() {
   renderPassInfo.pSubpasses = &subpass;
 
   try {
-    this->renderPass = device.get()->createRenderPass(renderPassInfo);
+    this->renderPass = this->device.get()->createRenderPass(renderPassInfo);
+    log::verbose("created vk::RenderPass");
   } catch (const vk::SystemError& err) {
-    log::fatal("failed to create render pass");
-    throw std::runtime_error("failed to create render pass");
+    log::fatal("failed to create vk::RenderPass");
+    throw std::runtime_error("failed to create vk::RenderPass");
+  }
+}
+
+void Swapchain::createFramebuffers() {
+  this->framebuffers.resize(this->imageViews.size());
+  for (size_t i = 0; i < this->imageViews.size(); i++) {
+    vk::ImageView attachments[] = {this->imageViews[i]};
+
+    vk::FramebufferCreateInfo createInfo = {};
+    createInfo.renderPass = this->renderPass;
+    createInfo.attachmentCount = 1;
+    createInfo.pAttachments = attachments;
+    createInfo.width = this->extent.width;
+    createInfo.height = this->extent.height;
+    createInfo.layers = 1;
+    try {
+      this->framebuffers[i] = this->device.get()->createFramebuffer(createInfo);
+      log::verbose("created vk::Frambuffer");
+    } catch (const vk::SystemError& err) {
+      log::verbose("failed to create vk::Framebuffer");
+      throw std::runtime_error("failed to create vk::Framebuffer");
+    }
   }
 }
 
