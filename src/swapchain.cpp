@@ -15,6 +15,8 @@ Swapchain::Swapchain(Device& device, vk::Extent2D extent)
 }
 
 Swapchain::~Swapchain() {
+  this->device.get()->destroyRenderPass(this->renderPass);
+
   for (auto imageView : imageViews) {
     device.get()->destroyImageView(imageView);
   }
@@ -111,6 +113,40 @@ void Swapchain::createImageViews() {
   }
 
   log::verbose("created all vk::ImageView's");
+}
+
+void Swapchain::createRenderPass() {
+  vk::AttachmentDescription colorAttachment = {};
+  colorAttachment.format = this->imageFormat;
+  colorAttachment.samples = vk::SampleCountFlagBits::e1;
+  colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+  colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
+  colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+  colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+  colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
+  colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+
+  vk::AttachmentReference colorAttachmentRef = {};
+  colorAttachmentRef.attachment = 0;
+  colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+  vk::SubpassDescription subpass = {};
+  subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+  subpass.colorAttachmentCount = 1;
+  subpass.pColorAttachments = &colorAttachmentRef;
+
+  vk::RenderPassCreateInfo renderPassInfo = {};
+  renderPassInfo.attachmentCount = 1;
+  renderPassInfo.pAttachments = &colorAttachment;
+  renderPassInfo.subpassCount = 1;
+  renderPassInfo.pSubpasses = &subpass;
+
+  try {
+    this->renderPass = device.get()->createRenderPass(renderPassInfo);
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create render pass");
+    throw std::runtime_error("failed to create render pass");
+  }
 }
 
 vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(

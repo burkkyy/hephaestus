@@ -16,10 +16,13 @@ class Swapchain {
   Swapchain(Device& device, vk::Extent2D extent);
   ~Swapchain();
 
+  vk::RenderPass getRenderPass() const { return this->renderPass; }
+
  private:
   void setDefaultCreateInfo();
   void createSwapchain();
   void createImageViews();
+  void createRenderPass();
 
   vk::SurfaceFormatKHR chooseSurfaceFormat(
       const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -34,6 +37,8 @@ class Swapchain {
   vk::Format imageFormat;
   vk::Extent2D extent;
   std::vector<vk::ImageView> imageViews;
+
+  vk::RenderPass renderPass;
 };
 
 }  // namespace hep
