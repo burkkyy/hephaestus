@@ -19,17 +19,19 @@ Swapchain::Swapchain(Device& device, vk::Extent2D extent)
 Swapchain::~Swapchain() {
   for (auto framebuffer : this->framebuffers) {
     this->device.get()->destroyFramebuffer(framebuffer);
+    log::verbose("destroyed vk::Framebuffer");
   }
 
   this->device.get()->destroyRenderPass(this->renderPass);
+  log::verbose("destroyed vk::RenderPass");
 
   for (auto imageView : imageViews) {
     this->device.get()->destroyImageView(imageView);
+    log::verbose("destroyed vk::ImageView");
   }
-  log::verbose("Destroyed all vk::ImageView's.");
 
   this->device.get()->destroySwapchainKHR(this->swapchain);
-  log::verbose("Destroyed vk::SwapchainKHR.");
+  log::verbose("destroyed vk::SwapchainKHR");
 }
 
 void Swapchain::setDefaultCreateInfo() {

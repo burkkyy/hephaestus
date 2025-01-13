@@ -56,17 +56,21 @@ Device::Device(Window& window) : window{window} {
   window.createSurface(*instance, surface);
   pickPhysicalDevice();
   createLogicalDevice();
+  createCommandPool();
 }
 
 Device::~Device() {
   if (this->enableValidationLayers) {
     destroyDebugUtilsMessengerEXT(this->instance.get(), this->debugMessenger,
                                   nullptr);
-    log::verbose("Destroyed Vulkan Debugger.");
+    log::verbose("destroyed Vulkan Debugger");
   }
 
+  this->device->destroyCommandPool(commandPool);
+  log::verbose("destroyed vk::CommandPool");
+
   this->instance->destroySurfaceKHR(surface);
-  log::verbose("Destroyed VkSurfaceKHR.");
+  log::verbose("destroyed vk::SurfaceKHR");
 }
 
 void Device::setupDebugMessenger() {
@@ -301,6 +305,22 @@ SwapchainSupportDetails Device::querySwapchainSupport(
   details.presentModes = device.getSurfacePresentModesKHR(surface);
 
   return details;
+}
+
+void Device::createCommandPool() {
+  QueueFamilyIndices queueFamilyIndices =
+      findQueueFamilies(this->physicalDevice);
+
+  vk::CommandPoolCreateInfo createInfo = {};
+  createInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+  try {
+    this->commandPool = this->device->createCommandPool(createInfo);
+    log::verbose("created vk::CommandPool");
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create vk::CommandPool");
+    throw std::runtime_error("failed to create vk::CommandPool");
+  }
 }
 
 }  // namespace hep

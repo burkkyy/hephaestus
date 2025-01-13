@@ -1,22 +1,40 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
+#include "util/types.hpp"
 
 namespace hep {
 
 class Swapchain {
  public:
+  static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
   Swapchain(const Swapchain&) = delete;
   Swapchain& operator=(const Swapchain&) = delete;
 
   Swapchain(Device& device, vk::Extent2D extent);
   ~Swapchain();
 
+  vk::Framebuffer getFrameBuffer(int index) {
+    return this->framebuffers.at(index);
+  }
+
   vk::RenderPass getRenderPass() const { return this->renderPass; }
+
+  vk::ImageView getImageView(int index) { return this->imageViews.at(index); }
+
+  size_t imageCount() { return this->images.size(); }
+
+  vk::Format getImageFormat() { return this->imageFormat; }
+
+  VkExtent2D getExtent() { return this->extent; }
+
+  u32 width() { return this->extent.width; }
+
+  u32 height() { return this->extent.height; }
 
  private:
   void setDefaultCreateInfo();
