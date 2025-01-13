@@ -1,13 +1,34 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <string>
 #include <vector>
+#include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
+#include "util/types.hpp"
 
 namespace hep {
+
+struct PipelineConfig {
+  PipelineConfig() = default;
+  PipelineConfig(const PipelineConfig&) = delete;
+  PipelineConfig& operator=(const PipelineConfig&) = delete;
+  
+  std::vector<vk::VertexInputBindingDescription> bindingDescriptions{};
+  std::vector<vk::VertexInputAttributeDescription> attributeDescriptions{};
+  vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+  vk::PipelineRasterizationStateCreateInfo rasterizationInfo;
+  vk::PipelineMultisampleStateCreateInfo multisampleInfo;
+  vk::PipelineColorBlendAttachmentState colorBlendAttachment;
+  vk::PipelineColorBlendStateCreateInfo colorBlendInfo;
+  vk::PipelineDepthStencilStateCreateInfo depthStencilInfo;
+  std::vector<vk::DynamicState> dynamicStateEnables;
+  vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
+
+  vk::PipelineLayout pipelineLayout = VK_NULL_HANDLE;
+  vk::RenderPass renderPass = VK_NULL_HANDLE;
+  u32 subpass = 0;
+};
 
 class Pipeline {
  public:
@@ -18,12 +39,19 @@ class Pipeline {
   ~Pipeline();
 
   void create(const std::string& vertexShaderFilename,
-              const std::string& fragmentShaderFilename);
+              const std::string& fragmentShaderFilename,
+              vk::RenderPass renderPass);
+
+  void bind(vk::CommandBuffer commandBuffer);
 
  private:
+  void setDefaultPipelineConfig();
   vk::UniqueShaderModule createShaderModule(const std::string& shaderFilename);
 
   Device& device;
+  PipelineConfig config;
+  vk::Pipeline graphicsPipeline;
+  vk::PipelineLayout pipelineLayout;
 };
 
 }  // namespace hep
