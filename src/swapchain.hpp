@@ -10,6 +10,8 @@ namespace hep {
 
 class Swapchain {
  public:
+  static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
   Swapchain(const Swapchain&) = delete;
   Swapchain& operator=(const Swapchain&) = delete;
 
