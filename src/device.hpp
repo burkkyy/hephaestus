@@ -34,6 +34,7 @@ class Device {
   ~Device();
 
   const vk::Device* get() const { return &this->device.get(); }
+  vk::CommandPool getCommandPool() { return this->commandPool; }
   vk::SurfaceKHR getSurface() const { return surface; }
   vk::Queue getGraphicsQueue() const { return graphicsQueue; }
   vk::Queue getPresentQueue() const { return presentQueue; }
@@ -58,9 +59,10 @@ class Device {
   bool isPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
   void pickPhysicalDevice();
 
-  void createLogicalDevice();
-
   SwapchainSupportDetails querySwapchainSupport(vk::PhysicalDevice device);
+
+  void createLogicalDevice();
+  void createCommandPool();
 
   vk::UniqueInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
@@ -73,6 +75,8 @@ class Device {
 
   vk::Queue graphicsQueue;
   vk::Queue presentQueue;
+
+  vk::CommandPool commandPool;
 
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
