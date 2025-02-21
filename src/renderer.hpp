@@ -3,8 +3,8 @@
 #include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
-#include "pipeline.hpp"
 #include "swapchain.hpp"
+#include "util/types.hpp"
 #include "window.hpp"
 
 namespace hep {
@@ -21,6 +21,17 @@ class Renderer {
     return this->swapchain.getRenderPass();
   }
 
+  vk::CommandBuffer getCurrentCommandBuffer() const {
+    assert(this->isFrameStarted &&
+           "Cannot get command buffer when frame not in progress");
+    return this->commandBuffers.at(currentFrameIndex);
+  }
+
+  vk::CommandBuffer beginFrame();
+  void endFrame();
+  void beginSwapChainRenderPass(vk::CommandBuffer commandBuffer);
+  void endSwapChainRenderPass(vk::CommandBuffer commandBuffer);
+
  private:
   void createCommandBuffers();
   void freeCommandBuffers();
@@ -30,8 +41,9 @@ class Renderer {
   Swapchain swapchain;
   std::vector<vk::CommandBuffer> commandBuffers;
 
-  // temp
-  Pipeline pipeline;
+  u32 currentImageIndex;
+  int currentFrameIndex = 0;
+  bool isFrameStarted = false;
 };
 
 }  // namespace hep
