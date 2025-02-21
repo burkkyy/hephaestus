@@ -9,14 +9,17 @@ namespace hep {
 
 Swapchain::Swapchain(Device& device, vk::Extent2D extent)
     : device{device}, extent{extent} {
-  setDefaultCreateInfo();
-  createSwapchain();
-  createImageViews();
-  createRenderPass();
-  createFramebuffers();
+  initialize();
 }
 
 Swapchain::~Swapchain() {
+  for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    this->device.get()->destroySemaphore(this->renderFinishedSemaphores[i]);
+    this->device.get()->destroySemaphore(this->imageAvailableSemaphores[i]);
+    this->device.get()->destroyFence(this->inFlightFences[i]);
+  }
+  log::verbose("destroyed sync objects");
+
   for (auto framebuffer : this->framebuffers) {
     this->device.get()->destroyFramebuffer(framebuffer);
     log::verbose("destroyed vk::Framebuffer");
@@ -32,6 +35,97 @@ Swapchain::~Swapchain() {
 
   this->device.get()->destroySwapchainKHR(this->swapchain);
   log::verbose("destroyed vk::SwapchainKHR");
+}
+
+vk::Result Swapchain::acquireNextImage(u32* imageIndex) {
+  vk::Result fenceResult = this->device.get()->waitForFences(
+      1, &this->inFlightFences[this->currentFrame], vk::True,
+      std::numeric_limits<u64>::max());
+
+  if (fenceResult != vk::Result::eSuccess) {
+    log::error("failed to wait for fence: " + vk::to_string(fenceResult));
+  }
+
+  vk::Result result = this->device.get()->acquireNextImageKHR(
+      this->swapchain, std::numeric_limits<u64>::max(),
+      this->imageAvailableSemaphores[this->currentFrame], VK_NULL_HANDLE,
+      imageIndex);
+
+  return result;
+}
+
+vk::Result Swapchain::submitCommandBuffers(
+    const vk::CommandBuffer* commandBuffers, u32* imageIndex) {
+  assert(commandBuffers != nullptr);
+  assert(imageIndex != nullptr);
+
+  if (this->imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
+    vk::Result fenceResult = this->device.get()->waitForFences(
+        1, &this->imagesInFlight[*imageIndex], vk::True,
+        std::numeric_limits<uint64_t>::max());
+
+    if (fenceResult != vk::Result::eSuccess) {
+      log::error("failed to wait for fence: " + vk::to_string(fenceResult));
+    }
+  }
+  this->imagesInFlight[*imageIndex] = this->inFlightFences[this->currentFrame];
+
+  vk::SubmitInfo submitInfo = {};
+
+  vk::Semaphore waitSemaphores[] = {
+      imageAvailableSemaphores[this->currentFrame]};
+  vk::PipelineStageFlags waitStages[] = {
+      vk::PipelineStageFlagBits::eColorAttachmentOutput};
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = waitSemaphores;
+  submitInfo.pWaitDstStageMask = waitStages;
+
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = commandBuffers;
+
+  vk::Semaphore signalSemaphores[] = {
+      renderFinishedSemaphores[this->currentFrame]};
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = signalSemaphores;
+
+  vk::Result resetFencesResult =
+      this->device.get()->resetFences(1, &inFlightFences[this->currentFrame]);
+
+  if (resetFencesResult != vk::Result::eSuccess) {
+    log::error("failed to wait for fences: " +
+               vk::to_string(resetFencesResult));
+  }
+
+  try {
+    this->device.getGraphicsQueue().submit(submitInfo,
+                                           inFlightFences[this->currentFrame]);
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to submit draw command buffer");
+    throw std::runtime_error("failed to submit draw command buffer");
+  }
+
+  vk::PresentInfoKHR presentInfo = {};
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = signalSemaphores;
+
+  vk::SwapchainKHR swapChains[] = {this->swapchain};
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = swapChains;
+  presentInfo.pImageIndices = imageIndex;
+
+  vk::Result result = this->device.getPresentQueue().presentKHR(&presentInfo);
+  this->currentFrame = (this->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+  return result;
+}
+
+void Swapchain::initialize() {
+  setDefaultCreateInfo();
+  createSwapchain();
+  createImageViews();
+  createRenderPass();
+  createFramebuffers();
+  createSyncObjects();
 }
 
 void Swapchain::setDefaultCreateInfo() {
@@ -180,6 +274,29 @@ void Swapchain::createFramebuffers() {
   }
 }
 
+void Swapchain::createSyncObjects() {
+  this->imageAvailableSemaphores.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+  this->renderFinishedSemaphores.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+  this->inFlightFences.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+  this->imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
+
+  try {
+    for (u32 i = 0; i < Swapchain::MAX_FRAMES_IN_FLIGHT; i++) {
+      this->imageAvailableSemaphores[i] =
+          this->device.get()->createSemaphore({});
+      this->renderFinishedSemaphores[i] =
+          this->device.get()->createSemaphore({});
+      this->inFlightFences.at(i) =
+          this->device.get()->createFence({vk::FenceCreateFlagBits::eSignaled});
+    }
+
+    log::verbose("created all sync objects");
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create sync objects");
+    throw std::runtime_error("failed to create sync objects");
+  }
+}
+
 vk::SurfaceFormatKHR Swapchain::chooseSurfaceFormat(
     const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
   if (availableFormats.size() == 1 &&
@@ -219,7 +336,7 @@ vk::Extent2D Swapchain::chooseExtent(
   if (capabilities.currentExtent.width != std::numeric_limits<u32>::max()) {
     return capabilities.currentExtent;
   } else {
-    VkExtent2D choosenExtent = {};
+    vk::Extent2D choosenExtent = {};
     choosenExtent.width =
         std::clamp(this->extent.width, capabilities.minImageExtent.width,
                    capabilities.maxImageExtent.width);
