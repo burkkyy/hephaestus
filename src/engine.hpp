@@ -1,6 +1,7 @@
 #pragma once
 
 #include "device.hpp"
+#include "pipeline.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
@@ -20,9 +21,15 @@ class Engine {
   void run();
 
  private:
+  void createPipelineLayout();
+  void createPipeline(vk::RenderPass renderPass);
+  void render();
+
   Window window;
   Device device;
   Renderer renderer;
+  Pipeline pipeline;
+  vk::PipelineLayout pipelineLayout;
 };
 
 }  // namespace hep
