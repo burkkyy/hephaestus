@@ -11,12 +11,13 @@ Pipeline::Pipeline(Device& device) : device{device} {
 }
 
 Pipeline::~Pipeline() {
-  this->device.get()->destroyPipelineLayout(this->pipelineLayout);
+  log::verbose("destoryed vk::Pipeline");
   this->device.get()->destroyPipeline(this->graphicsPipeline);
 }
 
 void Pipeline::create(const std::string& vertexShaderFilename,
                       const std::string& fragmentShaderFilename,
+                      vk::PipelineLayout pipelineLayout,
                       vk::RenderPass renderPass) {
   if (renderPass == VK_NULL_HANDLE) {
     log::fatal(
@@ -25,14 +26,17 @@ void Pipeline::create(const std::string& vertexShaderFilename,
         "failed to create graphics pipeline: no vk::RenderPass provided");
   }
 
-  // if (pipelineLayout == VK_NULL_HANDLE) {
-  //   log::fatal(
-  //       "failed to create graphics pipeline: no vk::PipelineLayout
-  //       provided");
-  //   throw std::runtime_error(
-  //       "failed to create graphics pipeline: no vk::PipelineLayout
-  //       provided");
-  // }
+  if (pipelineLayout == VK_NULL_HANDLE) {
+    log::fatal(
+        "failed to create graphics pipeline: no vk::PipelineLayout provided");
+    throw std::runtime_error(
+        "failed to create graphics pipeline: no vk::PipelineLayout provided");
+  }
+
+  if (this->graphicsPipeline) {
+    log::verbose("destorying old vk::Pipeline");
+    this->device.get()->destroyPipeline(this->graphicsPipeline);
+  }
 
   vk::UniqueShaderModule vertexShaderModule =
       createShaderModule(vertexShaderFilename);
@@ -47,17 +51,6 @@ void Pipeline::create(const std::string& vertexShaderFilename,
        vertexShaderModule.get(), "main"},
       {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment,
        fragmentShaderModule.get(), "main"}};
-
-  vk::PipelineLayoutCreateInfo pipelineLayoutInfo = {};
-  pipelineLayoutInfo.setLayoutCount = 0;
-  pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-  try {
-    this->pipelineLayout =
-        this->device.get()->createPipelineLayout(pipelineLayoutInfo);
-  } catch (const vk::SystemError& err) {
-    throw std::runtime_error("failed to create pipeline layout");
-  }
 
   vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
   vertexInputInfo.vertexBindingDescriptionCount = 0;
@@ -89,9 +82,10 @@ void Pipeline::create(const std::string& vertexShaderFilename,
   try {
     this->graphicsPipeline =
         this->device.get()->createGraphicsPipeline(nullptr, pipelineInfo).value;
+    log::verbose("created vk::Pipeline");
   } catch (const vk::SystemError& err) {
-    log::fatal("failed to create graphics pipeline");
-    throw std::runtime_error("failed to create graphics pipeline");
+    log::fatal("failed to create vk::Pipeline");
+    throw std::runtime_error("failed to create vk::Pipeline");
   }
 }
 
@@ -159,7 +153,7 @@ void Pipeline::setDefaultPipelineConfig() {
   this->config.dynamicStateInfo.pDynamicStates =
       this->config.dynamicStateEnables.data();
   this->config.dynamicStateInfo.dynamicStateCount =
-      static_cast<uint32_t>(this->config.dynamicStateEnables.size());
+      static_cast<u32>(this->config.dynamicStateEnables.size());
 }
 
 vk::UniqueShaderModule Pipeline::createShaderModule(
@@ -182,7 +176,7 @@ vk::UniqueShaderModule Pipeline::createShaderModule(
   try {
     return device.get()->createShaderModuleUnique(
         {vk::ShaderModuleCreateFlags(), buffer.size(),
-         reinterpret_cast<const uint32_t*>(buffer.data())});
+         reinterpret_cast<const u32*>(buffer.data())});
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create shader module");
     throw std::runtime_error("failed to create shader module");

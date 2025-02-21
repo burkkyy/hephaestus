@@ -13,7 +13,7 @@ struct PipelineConfig {
   PipelineConfig() = default;
   PipelineConfig(const PipelineConfig&) = delete;
   PipelineConfig& operator=(const PipelineConfig&) = delete;
-  
+
   std::vector<vk::VertexInputBindingDescription> bindingDescriptions{};
   std::vector<vk::VertexInputAttributeDescription> attributeDescriptions{};
   vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
@@ -40,7 +40,7 @@ class Pipeline {
 
   void create(const std::string& vertexShaderFilename,
               const std::string& fragmentShaderFilename,
-              vk::RenderPass renderPass);
+              vk::PipelineLayout pipelineLayout, vk::RenderPass renderPass);
 
   void bind(vk::CommandBuffer commandBuffer);
 
@@ -51,7 +51,6 @@ class Pipeline {
   Device& device;
   PipelineConfig config;
   vk::Pipeline graphicsPipeline;
-  vk::PipelineLayout pipelineLayout;
 };
 
 }  // namespace hep
