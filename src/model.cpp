@@ -18,17 +18,12 @@ Model::Vertex::getBindingDescriptions() {
 
 std::vector<vk::VertexInputAttributeDescription>
 Model::Vertex::getAttributeDescriptions() {
-  std::vector<vk::VertexInputAttributeDescription> attributeDescriptions(1);
+  std::vector<vk::VertexInputAttributeDescription> attributeDescriptions{};
 
-  attributeDescriptions[0].binding = 0;
-  attributeDescriptions[0].location = 0;
-  attributeDescriptions[0].format = vk::Format::eR32G32Sfloat;
-  attributeDescriptions[0].offset = 0;
-
-  // attributeDescriptions.push_back(
-  //     {0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position)});
-  // attributeDescriptions.push_back(
-  //     {1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)});
+  attributeDescriptions.push_back(
+      {0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position)});
+  attributeDescriptions.push_back(
+      {1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)});
   // attributeDescriptions.push_back(
   //     {2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)});
   // attributeDescriptions.push_back(
