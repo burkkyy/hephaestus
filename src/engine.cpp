@@ -9,8 +9,10 @@ Engine::Engine()
       device{this->window},
       renderer{this->window, this->device},
       pipeline{device} {
-  std::vector<Model::Vertex> vertices{};
-  sierpinski(vertices, 5, {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f});
+  std::vector<Model::Vertex> vertices{{{-0.5f, 0.5f}, {1, 0, 0}},
+                                      {{0.5f, 0.5f}, {0, 1, 0}},
+                                      {{0.0f, -0.5f}, {0, 0, 1}}};
+  // sierpinski(vertices, 5, {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f});
   this->model = std::make_unique<Model>(this->device, vertices);
 
   createPipelineLayout();
