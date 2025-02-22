@@ -9,8 +9,28 @@ Engine::Engine()
       device{this->window},
       renderer{this->window, this->device},
       pipeline{device} {
+  std::vector<Model::Vertex> vertices{};
+  sierpinski(vertices, 5, {-0.5f, 0.5f}, {0.5f, 0.5f}, {0.0f, -0.5f});
+  this->model = std::make_unique<Model>(this->device, vertices);
+
   createPipelineLayout();
   createPipeline(this->renderer.getSwapChainRenderPass());
+}
+
+void Engine::sierpinski(std::vector<Model::Vertex>& vertices, int depth,
+                        glm::vec2 left, glm::vec2 right, glm::vec2 top) {
+  if (depth <= 0) {
+    vertices.push_back({top});
+    vertices.push_back({right});
+    vertices.push_back({left});
+  } else {
+    auto leftTop = 0.5f * (left + top);
+    auto rightTop = 0.5f * (right + top);
+    auto leftRight = 0.5f * (left + right);
+    sierpinski(vertices, depth - 1, left, leftRight, leftTop);
+    sierpinski(vertices, depth - 1, leftRight, right, rightTop);
+    sierpinski(vertices, depth - 1, leftTop, rightTop, top);
+  }
 }
 
 Engine::~Engine() {
@@ -27,7 +47,8 @@ void Engine::run() {
       this->renderer.beginSwapChainRenderPass(commandBuffer);
 
       this->pipeline.bind(commandBuffer);
-      commandBuffer.draw(3, 1, 0, 0);
+      this->model->bind(commandBuffer);
+      this->model->draw(commandBuffer);
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
       this->renderer.endFrame();
