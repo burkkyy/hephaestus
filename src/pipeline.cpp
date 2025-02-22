@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "model.hpp"
 #include "util/logger.hpp"
 
 namespace hep {
@@ -52,9 +53,16 @@ void Pipeline::create(const std::string& vertexShaderFilename,
       {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment,
        fragmentShaderModule.get(), "main"}};
 
+  auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
+  auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
+
   vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
-  vertexInputInfo.vertexBindingDescriptionCount = 0;
-  vertexInputInfo.vertexAttributeDescriptionCount = 0;
+  vertexInputInfo.vertexBindingDescriptionCount =
+      static_cast<u32>(bindingDescriptions.size());
+  vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+  vertexInputInfo.vertexAttributeDescriptionCount =
+      static_cast<u32>(attributeDescriptions.size());
+  vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
   vk::PipelineViewportStateCreateInfo viewportInfo = {};
   viewportInfo.viewportCount = 1;

@@ -5,31 +5,35 @@ LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXran
 .PHONY: TARGET
 default: TARGET
 
-OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o build/renderer.o build/engine.o
+OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o build/renderer.o build/model.o build/engine.o
 
 build/engine.o: src/engine.cpp src/engine.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
+
+build/model.o: src/model.cpp src/model.hpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 build/renderer.o: src/renderer.cpp src/renderer.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 build/pipeline.o: src/pipeline.cpp src/pipeline.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 build/swapchain.o: src/swapchain.cpp src/swapchain.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 build/device.o: src/device.cpp src/device.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 build/window.o: src/window.cpp src/window.hpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
 include libraries.mk
 

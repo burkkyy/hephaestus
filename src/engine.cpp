@@ -9,6 +9,11 @@ Engine::Engine()
       device{this->window},
       renderer{this->window, this->device},
       pipeline{device} {
+  std::vector<Model::Vertex> vertices{{{-0.5f, 0.5f}, {1, 0, 0}},
+                                      {{0.5f, 0.5f}, {0, 1, 0}},
+                                      {{0.0f, -0.5f}, {0, 0, 1}}};
+  this->model = std::make_unique<Model>(this->device, vertices);
+
   createPipelineLayout();
   createPipeline(this->renderer.getSwapChainRenderPass());
 }
@@ -27,7 +32,8 @@ void Engine::run() {
       this->renderer.beginSwapChainRenderPass(commandBuffer);
 
       this->pipeline.bind(commandBuffer);
-      commandBuffer.draw(3, 1, 0, 0);
+      this->model->bind(commandBuffer);
+      this->model->draw(commandBuffer);
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
       this->renderer.endFrame();

@@ -73,6 +73,55 @@ Device::~Device() {
   log::verbose("destroyed vk::SurfaceKHR");
 }
 
+u32 Device::findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) {
+  vk::PhysicalDeviceMemoryProperties memoryProperties =
+      this->physicalDevice.getMemoryProperties();
+
+  for (u32 i = 0; i < memoryProperties.memoryTypeCount; i++) {
+    if ((typeFilter & (1 << i)) &&
+        (memoryProperties.memoryTypes[i].propertyFlags & properties) ==
+            properties) {
+      return i;
+    }
+  }
+
+  log::fatal("failed to find suitable memory type");
+  throw std::runtime_error("failed to find suitable memory type");
+}
+
+void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
+                          vk::MemoryPropertyFlags properties,
+                          vk::Buffer& buffer, vk::DeviceMemory& bufferMemory) {
+  vk::BufferCreateInfo bufferInfo = {};
+  bufferInfo.size = size;
+  bufferInfo.usage = usage;
+  bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+  try {
+    buffer = device->createBuffer(bufferInfo);
+  } catch (const vk::SystemError& error) {
+    log::fatal("failed to create vertex buffer");
+    throw std::runtime_error("failed to create vertex buffer");
+  }
+
+  vk::MemoryRequirements memoryRequirements =
+      device->getBufferMemoryRequirements(buffer);
+
+  vk::MemoryAllocateInfo allocInfo = {};
+  allocInfo.allocationSize = memoryRequirements.size;
+  allocInfo.memoryTypeIndex =
+      findMemoryType(memoryRequirements.memoryTypeBits, properties);
+
+  try {
+    bufferMemory = device->allocateMemory(allocInfo);
+  } catch (const vk::SystemError& error) {
+    log::fatal("failed to allocate vertex buffer memory");
+    throw std::runtime_error("failed to allocate vertex buffer memory");
+  }
+
+  device->bindBufferMemory(buffer, bufferMemory, 0);
+}
+
 void Device::setupDebugMessenger() {
   if (!this->enableValidationLayers) return;
 

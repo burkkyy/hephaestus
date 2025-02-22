@@ -4,6 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
+#include "util/types.hpp"
 #include "window.hpp"
 
 namespace hep {
@@ -46,6 +47,12 @@ class Device {
   SwapchainSupportDetails getSwapchainSupport() {
     return querySwapchainSupport(this->physicalDevice);
   }
+
+  u32 findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties);
+
+  void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
+                    vk::MemoryPropertyFlags properties, vk::Buffer& buffer,
+                    vk::DeviceMemory& bufferMemory);
 
  private:
   void setupDebugMessenger();
