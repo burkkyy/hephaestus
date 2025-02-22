@@ -28,9 +28,6 @@ class Engine {
   void createPipeline(vk::RenderPass renderPass);
   void render();
 
-  void sierpinski(std::vector<Model::Vertex>& vertices, int depth,
-                  glm::vec2 left, glm::vec2 right, glm::vec2 top);
-
   Window window;
   Device device;
   Renderer renderer;
