@@ -47,4 +47,4 @@ run: $(TARGET)
 
 .PHONY: clean
 clean:
-	@-rm -r *.bin *.o build/
+	@-rm -r app.bin build/

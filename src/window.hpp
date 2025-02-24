@@ -12,24 +12,29 @@ namespace hep {
 
 class Window {
  public:
-  Window(const Window &) = delete;
-  Window &operator=(const Window &) = delete;
+  Window(const Window&) = delete;
+  Window& operator=(const Window&) = delete;
 
-  Window(u32 width, u32 height, const std::string &name = "hephaestus");
+  Window(int width, int height, const std::string& name = "hephaestus");
   ~Window();
 
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
-  vk::Extent2D getExtent() { return {width, height}; }
-  void createSurface(const vk::Instance &instance, vk::SurfaceKHR &surface);
+  vk::Extent2D getExtent() {
+    return {static_cast<u32>(width), static_cast<u32>(height)};
+  }
+  void createSurface(const vk::Instance& instance, vk::SurfaceKHR& surface);
+  bool wasResized() const { return this->resized; };
+  void resetResizedFlag() { this->resized = false; }
 
  private:
-  static void resizeCallback(GLFWwindow *window, u32 width, u32 height);
+  static void resizeCallback(GLFWwindow* window, int width, int height);
   void initialize();
 
-  u32 width, height;
+  int width, height;
+  bool resized = false;
   std::string name;
-  GLFWwindow *window;
+  GLFWwindow* window;
 };
 
 }  // namespace hep

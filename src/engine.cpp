@@ -40,7 +40,7 @@ void Engine::run() {
     }
   }
 
-  this->device.get()->waitIdle();
+  this->device.waitIdle();
 }
 
 void Engine::createPipelineLayout() {

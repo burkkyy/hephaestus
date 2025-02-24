@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
@@ -16,6 +17,8 @@ class Swapchain {
   Swapchain& operator=(const Swapchain&) = delete;
 
   Swapchain(Device& device, vk::Extent2D extent);
+  Swapchain(Device& device, vk::Extent2D extent,
+            std::shared_ptr<Swapchain> previous);
   ~Swapchain();
 
   vk::Framebuffer getFrameBuffer(int index) {
@@ -33,6 +36,10 @@ class Swapchain {
   vk::Result acquireNextImage(u32* imageIndex);
   vk::Result submitCommandBuffers(const vk::CommandBuffer* buffers,
                                   u32* imageIndex);
+
+  bool compareSwapchainFormats(const Swapchain& swapchain) const {
+    return swapchain.imageFormat == this->imageFormat;
+  }
 
  private:
   void initialize();
@@ -56,6 +63,7 @@ class Swapchain {
   vk::Format imageFormat;
   vk::Extent2D extent;
   std::vector<vk::ImageView> imageViews;
+  std::shared_ptr<Swapchain> oldSwapchain;
 
   vk::RenderPass renderPass;
   std::vector<vk::Framebuffer> framebuffers;

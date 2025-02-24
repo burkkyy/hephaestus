@@ -5,19 +5,21 @@
 namespace hep {
 
 Renderer::Renderer(Window& window, Device& device)
-    : window{window}, device{device}, swapchain{device, window.getExtent()} {
+    : window{window}, device{device} {
+  recreateSwapchain();
   createCommandBuffers();
 }
 
-Renderer::~Renderer() {}
+Renderer::~Renderer() { freeCommandBuffers(); }
 
 vk::CommandBuffer Renderer::beginFrame() {
   assert(!this->isFrameStarted &&
          "Can't call beginFrame while already in progress");
 
-  vk::Result result = this->swapchain.acquireNextImage(&currentImageIndex);
+  vk::Result result = this->swapchain->acquireNextImage(&currentImageIndex);
   if (result == vk::Result::eErrorOutOfDateKHR) {
-    throw std::runtime_error("swap chain KHR out of date");
+    recreateSwapchain();
+    return nullptr;
   }
 
   if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
@@ -59,12 +61,12 @@ void Renderer::endFrame() {
   }
 
   vk::Result result =
-      this->swapchain.submitCommandBuffers(&commandBuffer, &currentImageIndex);
+      this->swapchain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
   if (result == vk::Result::eErrorOutOfDateKHR ||
-      result == vk::Result::eSuboptimalKHR) {
-    // window size was changed, or swapchain out of date, recreate swapChain
-    throw std::runtime_error("swapchain out of date");
+      result == vk::Result::eSuboptimalKHR || this->window.wasResized()) {
+    this->window.resetResizedFlag();
+    recreateSwapchain();
   } else if (result != vk::Result::eSuccess) {
     throw std::runtime_error("failed to present swap chain image");
   }
@@ -80,11 +82,11 @@ void Renderer::beginSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
          "Can't begin render pass on command buffer from a different frame");
 
   vk::RenderPassBeginInfo renderPassInfo = {};
-  renderPassInfo.renderPass = this->swapchain.getRenderPass();
+  renderPassInfo.renderPass = this->swapchain->getRenderPass();
   renderPassInfo.framebuffer =
-      this->swapchain.getFrameBuffer(this->currentImageIndex);
+      this->swapchain->getFrameBuffer(this->currentImageIndex);
   renderPassInfo.renderArea.offset = vk::Offset2D{0, 0};
-  renderPassInfo.renderArea.extent = this->swapchain.getExtent();
+  renderPassInfo.renderArea.extent = this->swapchain->getExtent();
 
   vk::ClearValue clearColor = {std::array<float, 4>{0.0f, 0.0f, 0.0f, 1.0f}};
   renderPassInfo.clearValueCount = 1;
@@ -94,11 +96,11 @@ void Renderer::beginSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
 
   vk::Viewport viewport{0.0f,
                         0.0f,
-                        static_cast<float>(this->swapchain.width()),
-                        static_cast<float>(this->swapchain.height()),
+                        static_cast<float>(this->swapchain->width()),
+                        static_cast<float>(this->swapchain->height()),
                         0.0f,
                         1.0f};
-  vk::Rect2D scissor{{0, 0}, this->swapchain.getExtent()};
+  vk::Rect2D scissor{{0, 0}, this->swapchain->getExtent()};
 
   commandBuffer.setViewport(0, 1, &viewport);
   commandBuffer.setScissor(0, 1, &scissor);
@@ -127,6 +129,35 @@ void Renderer::createCommandBuffers() {
   } catch (const vk::SystemError& err) {
     log::fatal("failed to allocate command buffers");
     throw std::runtime_error("failed to allocate command buffers");
+  }
+}
+
+void Renderer::freeCommandBuffers() {
+  this->device.get()->freeCommandBuffers(this->device.getCommandPool(),
+                                         this->commandBuffers);
+  this->commandBuffers.clear();
+}
+
+void Renderer::recreateSwapchain() {
+  vk::Extent2D extent = window.getExtent();
+  while (extent.width == 0 || extent.height == 0) {
+    extent = window.getExtent();
+    glfwWaitEvents();
+  }
+
+  this->device.waitIdle();
+
+  if (this->swapchain == nullptr) {
+    this->swapchain = std::make_unique<Swapchain>(this->device, extent);
+    return;
+  }
+
+  std::shared_ptr<Swapchain> oldSwapChain = std::move(this->swapchain);
+  this->swapchain =
+      std::make_unique<Swapchain>(this->device, extent, oldSwapChain);
+
+  if (!oldSwapChain->compareSwapchainFormats(*this->swapchain.get())) {
+    throw std::runtime_error("Swapchain image format has changed");
   }
 }
 

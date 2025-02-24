@@ -12,6 +12,13 @@ Swapchain::Swapchain(Device& device, vk::Extent2D extent)
   initialize();
 }
 
+Swapchain::Swapchain(Device& device, vk::Extent2D extent,
+                     std::shared_ptr<Swapchain> previous)
+    : device{device}, extent{extent}, oldSwapchain{previous} {
+  initialize();
+  this->oldSwapchain = nullptr;
+}
+
 Swapchain::~Swapchain() {
   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
     this->device.get()->destroySemaphore(this->renderFinishedSemaphores[i]);
@@ -171,6 +178,9 @@ void Swapchain::setDefaultCreateInfo() {
   swapchainCreateInfo.clipped = VK_TRUE;
 
   swapchainCreateInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
+  swapchainCreateInfo.oldSwapchain = this->oldSwapchain == nullptr
+                                         ? VK_NULL_HANDLE
+                                         : this->oldSwapchain->swapchain;
 
   this->imageFormat = surfaceFormat.format;
 }
@@ -181,7 +191,7 @@ void Swapchain::createSwapchain() {
         this->device.get()->createSwapchainKHR(this->swapchainCreateInfo);
     log::verbose("created vk::SwapchainKHR");
   } catch (const vk::SystemError& err) {
-    log::fatal("failed to create swapchain");
+    log::fatal("failed to create swapchain. Error: ", err.what());
     throw std::runtime_error("failed to create swapchain");
   }
 
