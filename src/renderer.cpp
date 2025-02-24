@@ -156,11 +156,6 @@ void Renderer::recreateSwapchain() {
   this->swapchain =
       std::make_unique<Swapchain>(this->device, extent, oldSwapChain);
 
-  if (this->swapchain->imageCount() != commandBuffers.size()) {
-    freeCommandBuffers();
-    createCommandBuffers();
-  }
-
   if (!oldSwapChain->compareSwapchainFormats(*this->swapchain.get())) {
     throw std::runtime_error("Swapchain image format has changed");
   }
