@@ -35,7 +35,10 @@ class Device {
   ~Device();
 
   const vk::Device* get() const { return &this->device.get(); }
-  vk::CommandPool getCommandPool() { return this->commandPool; }
+
+  void waitIdle() { this->device->waitIdle(); }
+
+  vk::CommandPool getCommandPool() const { return this->commandPool; }
   vk::SurfaceKHR getSurface() const { return surface; }
   vk::Queue getGraphicsQueue() const { return graphicsQueue; }
   vk::Queue getPresentQueue() const { return presentQueue; }
