@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -std=c++20 -O2 -Wall -Wextra
 LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
-.PHONY: TARGET
+.PHONY: TARGET 
 default: TARGET
 
 OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o build/renderer.o build/model.o build/engine.o
@@ -35,16 +35,28 @@ build/window.o: src/window.cpp src/window.hpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
+vertexShaderSources = $(shell find ./shaders -type f -name "*.vert")
+vertexShaderObjectFiles = $(patsubst %.vert, %.vert.spv, $(vertexShaderSources))
+fragmentShaderSources = $(shell find ./shaders -type f -name "*.frag")
+fragmentShaderObjectFiles = $(patsubst %.frag, %.frag.spv, $(fragmentShaderSources))
+
+%.spv: %
+	glslc $< -o $@
+
 include libraries.mk
 
 TARGET: GLFW app.bin
-app.bin: app.cpp $(OBJECT_FILES)
-	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) $^ -o $@ $(LDFLAGS)
 
-.PHONY: run
-run: $(TARGET)
-	@./$(TARGET)
+app.bin: $(vertexShaderObjectFiles) $(fragmentShaderObjectFiles)
+app.bin: app.cpp $(OBJECT_FILES)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) app.cpp $(OBJECT_FILES) -o $@ $(LDFLAGS)
+
+.PHONY: test
+test: TARGET
+	@./app.bin
 
 .PHONY: clean
 clean:
-	@-rm -r app.bin build/
+	@-rm -r app.bin 2>/dev/null 
+	@-rm -r build/ 2>/dev/null 
+	@-rm shaders/*.spv 2>/dev/null 
