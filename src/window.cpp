@@ -4,7 +4,7 @@
 
 namespace hep {
 
-Window::Window(u32 width, u32 height, const std::string& name)
+Window::Window(int width, int height, const std::string& name)
     : width{width}, height{height}, name{name} {
   initialize();
 }
@@ -27,19 +27,22 @@ void Window::createSurface(const vk::Instance& instance,
   log::verbose("Created vk::SurfaceKHR.");
 }
 
-void Window::resizeCallback(GLFWwindow* window, u32 width, u32 height) {
-  (void)window;
-  (void)width;
-  (void)height;
+void Window::resizeCallback(GLFWwindow* window, int width, int height) {
+  auto newWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+  newWindow->resized = true;
+  newWindow->width = width;
+  newWindow->height = height;
 }
 
 void Window::initialize() {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-  window = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
-  glfwSetWindowUserPointer(window, this);
+  this->window =
+      glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
+  glfwSetWindowUserPointer(this->window, this);
+  glfwSetFramebufferSizeCallback(this->window, resizeCallback);
 }
 
 }  // namespace hep
