@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
@@ -18,7 +19,8 @@ class Renderer {
   ~Renderer();
 
   vk::RenderPass getSwapChainRenderPass() const {
-    return this->swapchain.getRenderPass();
+    assert(this->swapchain != nullptr);
+    return this->swapchain->getRenderPass();
   }
 
   vk::CommandBuffer getCurrentCommandBuffer() const {
@@ -35,10 +37,11 @@ class Renderer {
  private:
   void createCommandBuffers();
   void freeCommandBuffers();
+  void recreateSwapchain();
 
   Window& window;
   Device& device;
-  Swapchain swapchain;
+  std::unique_ptr<Swapchain> swapchain;
   std::vector<vk::CommandBuffer> commandBuffers;
 
   u32 currentImageIndex;
