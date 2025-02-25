@@ -23,7 +23,11 @@ void Engine::run() {
     if (commandBuffer != nullptr) {
       this->renderer.beginSwapChainRenderPass(commandBuffer);
 
-      renderSystem.render(commandBuffer);
+      vk::Extent2D extent = this->renderer.getCurrentFramebufferExtent();
+      glm::vec2 extentVec2(static_cast<float>(extent.width),
+                           static_cast<float>(extent.height));
+
+      renderSystem.render(commandBuffer, extentVec2);
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
       this->renderer.endFrame();
