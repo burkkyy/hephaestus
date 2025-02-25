@@ -1,10 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
-#include "model.hpp"
-#include "pipeline.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
@@ -24,16 +23,9 @@ class Engine {
   void run();
 
  private:
-  void createPipelineLayout();
-  void createPipeline(vk::RenderPass renderPass);
-  void render();
-
   Window window;
   Device device;
   Renderer renderer;
-  Pipeline pipeline;
-  vk::PipelineLayout pipelineLayout;
-  std::unique_ptr<Model> model;
 };
 
 }  // namespace hep
