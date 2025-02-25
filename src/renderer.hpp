@@ -29,6 +29,12 @@ class Renderer {
     return this->commandBuffers.at(currentFrameIndex);
   }
 
+  u32 getFrameIndex() const {
+    assert(isFrameStarted &&
+           "Cannot get frame index when frame not in progress");
+    return static_cast<u32>(currentFrameIndex);
+  }
+
   float getAspectRatio() const { return this->swapchain->extentAspectRatio(); }
   vk::Extent2D getCurrentFramebufferExtent() const {
     return this->swapchain->getExtent();
