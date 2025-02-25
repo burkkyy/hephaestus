@@ -26,14 +26,17 @@ void main() {
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
-  for(int i = 0; i < 3; i++){
-    uv = fract(uv * 2.0) - 0.5;
+  for(int i = 0; i < 4; i++){
+    uv = fract(uv * 1.2) - 0.5;
     
-    float d = length(uv);
-    vec3 col = palette(length(uv0) + time * 0.4);
+    float d = length(uv) * exp(-length(uv0));
 
-    d = sin(d * 5.0 + time) / 5.0;
-    d = 0.02 / abs(d);
+    vec3 col = palette(length(uv0) + i * 0.4 + time * 0.5);
+
+    d = sin(d * 8.0 + time) / 8.0;
+    d = abs(d);
+
+    d = pow(0.01 / d, 2.0);
   
     finalColor += col * d;
   }
