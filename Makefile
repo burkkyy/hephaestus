@@ -49,9 +49,8 @@ fragmentShaderObjectFiles = $(patsubst %.frag, %.frag.spv, $(fragmentShaderSourc
 
 include libraries.mk
 
-TARGET: GLFW app.bin
+TARGET: GLFW app.bin $(vertexShaderObjectFiles) $(fragmentShaderObjectFiles)
 
-app.bin: $(vertexShaderObjectFiles) $(fragmentShaderObjectFiles)
 app.bin: app.cpp $(OBJECT_FILES)
 	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) app.cpp $(OBJECT_FILES) -o $@ $(LDFLAGS)
 
