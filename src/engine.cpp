@@ -1,5 +1,8 @@
 #include "engine.hpp"
 
+#include <chrono>
+
+#include "frame_info.hpp"
 #include "render_system.hpp"
 #include "util/logger.hpp"
 
@@ -16,18 +19,34 @@ void Engine::run() {
   RenderSystem renderSystem{this->device,
                             this->renderer.getSwapChainRenderPass()};
 
+  auto startTime = std::chrono::high_resolution_clock::now();
+  auto currentTime = startTime;
+
   while (!this->window.shouldClose()) {
     glfwPollEvents();
 
+    auto newTime = std::chrono::high_resolution_clock::now();
+    double deltaTime =
+        std::chrono::duration<double, std::chrono::seconds::period>(newTime -
+                                                                    currentTime)
+            .count();
+    currentTime = newTime;
+
     vk::CommandBuffer commandBuffer = this->renderer.beginFrame();
     if (commandBuffer != nullptr) {
-      this->renderer.beginSwapChainRenderPass(commandBuffer);
+      double elapsedTime =
+          std::chrono::duration<double>(currentTime - startTime).count();
 
       vk::Extent2D extent = this->renderer.getCurrentFramebufferExtent();
       glm::vec2 extentVec2(static_cast<float>(extent.width),
                            static_cast<float>(extent.height));
 
-      renderSystem.render(commandBuffer, extentVec2);
+      FrameInfo frameInfo{commandBuffer, this->renderer.getFrameIndex(),
+                          elapsedTime, deltaTime, extentVec2};
+
+      this->renderer.beginSwapChainRenderPass(commandBuffer);
+
+      renderSystem.render(commandBuffer, frameInfo);
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
       this->renderer.endFrame();

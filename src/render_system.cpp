@@ -36,10 +36,12 @@ RenderSystem ::~RenderSystem() {
 }
 
 void RenderSystem::render(vk::CommandBuffer commandBuffer,
-                          glm::vec2 windowExtent) {
+                          FrameInfo frameInfo) {
   this->pipeline.bind(commandBuffer);
 
-  pushConstant.data = {windowExtent.x, windowExtent.y, 0.0f, 0.0f};
+  pushConstant.data = {frameInfo.currentFramebufferExtent.x,
+                       frameInfo.currentFramebufferExtent.y,
+                       frameInfo.elapsedTime, 0.0f};
 
   // Triangle 1
   triangle1->bind(commandBuffer);
