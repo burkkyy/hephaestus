@@ -43,7 +43,8 @@ class Swapchain {
                                   u32* imageIndex);
 
   bool compareSwapchainFormats(const Swapchain& swapchain) const {
-    return swapchain.imageFormat == this->imageFormat;
+    return swapchain.depthFormat == this->depthFormat &&
+           swapchain.imageFormat == this->imageFormat;
   }
 
  private:

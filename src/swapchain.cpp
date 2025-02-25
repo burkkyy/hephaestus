@@ -236,6 +236,20 @@ void Swapchain::createImageViews() {
 }
 
 void Swapchain::createRenderPass() {
+  vk::AttachmentDescription depthAttachment{};
+  depthAttachment.format = findDepthFormat();
+  depthAttachment.samples = vk::SampleCountFlagBits::e1;
+  depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+  depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+  depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+  depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+  depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
+  depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+  vk::AttachmentReference depthAttachmentRef{};
+  depthAttachmentRef.attachment = 1;
+  depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
   vk::AttachmentDescription colorAttachment = {};
   colorAttachment.format = this->imageFormat;
   colorAttachment.samples = vk::SampleCountFlagBits::e1;
@@ -254,12 +268,28 @@ void Swapchain::createRenderPass() {
   subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &colorAttachmentRef;
+  subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+  vk::SubpassDependency dependency = {};
+  dependency.dstSubpass = 0;
+  dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite |
+                             vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+  dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+
+  std::array<vk::AttachmentDescription, 2> attachments = {colorAttachment,
+                                                          depthAttachment};
 
   vk::RenderPassCreateInfo renderPassInfo = {};
-  renderPassInfo.attachmentCount = 1;
-  renderPassInfo.pAttachments = &colorAttachment;
+  renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+  renderPassInfo.pAttachments = attachments.data();
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpass;
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &dependency;
 
   try {
     this->renderPass = this->device.get()->createRenderPass(renderPassInfo);
@@ -319,22 +349,25 @@ void Swapchain::createDepthResources() {
 }
 
 void Swapchain::createFramebuffers() {
-  this->framebuffers.resize(this->imageViews.size());
-  for (size_t i = 0; i < this->imageViews.size(); i++) {
-    vk::ImageView attachments[] = {this->imageViews[i]};
+  this->framebuffers.resize(imageCount());
+
+  for (size_t i = 0; i < imageCount(); i++) {
+    std::array<vk::ImageView, 2> attachments = {this->imageViews[i],
+                                                this->depthImageViews[i]};
 
     vk::FramebufferCreateInfo createInfo = {};
     createInfo.renderPass = this->renderPass;
-    createInfo.attachmentCount = 1;
-    createInfo.pAttachments = attachments;
-    createInfo.width = this->extent.width;
-    createInfo.height = this->extent.height;
+    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    createInfo.pAttachments = attachments.data();
+    createInfo.width = width();
+    createInfo.height = height();
     createInfo.layers = 1;
+
     try {
       this->framebuffers[i] = this->device.get()->createFramebuffer(createInfo);
       log::verbose("created vk::Frambuffer");
-    } catch (const vk::SystemError& err) {
-      log::verbose("failed to create vk::Framebuffer");
+    } catch (const vk::SystemError& error) {
+      log::verbose("failed to create vk::Framebuffer. Error: ", error.what());
       throw std::runtime_error("failed to create vk::Framebuffer");
     }
   }
