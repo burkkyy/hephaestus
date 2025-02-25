@@ -78,6 +78,7 @@ void Pipeline::create(const std::string& vertexShaderFilename,
   pipelineInfo.pViewportState = &viewportInfo;
   pipelineInfo.pRasterizationState = &this->config.rasterizationInfo;
   pipelineInfo.pMultisampleState = &this->config.multisampleInfo;
+  pipelineInfo.pDepthStencilState = &this->config.depthStencilInfo;
   pipelineInfo.pColorBlendState = &this->config.colorBlendInfo;
   pipelineInfo.pDynamicState = &this->config.dynamicStateInfo;
 

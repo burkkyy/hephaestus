@@ -27,6 +27,13 @@ Swapchain::~Swapchain() {
   }
   log::verbose("destroyed sync objects");
 
+  for (size_t i = 0; i < this->depthImages.size(); i++) {
+    this->device.get()->destroyImageView(depthImageViews[i], nullptr);
+    this->device.get()->destroyImage(depthImages[i], nullptr);
+    this->device.get()->freeMemory(depthImageMemorys[i], nullptr);
+  }
+  log::verbose("destroyed depth resources");
+
   for (auto framebuffer : this->framebuffers) {
     this->device.get()->destroyFramebuffer(framebuffer);
     log::verbose("destroyed vk::Framebuffer");
@@ -131,6 +138,7 @@ void Swapchain::initialize() {
   createSwapchain();
   createImageViews();
   createRenderPass();
+  createDepthResources();
   createFramebuffers();
   createSyncObjects();
 }
@@ -228,6 +236,20 @@ void Swapchain::createImageViews() {
 }
 
 void Swapchain::createRenderPass() {
+  vk::AttachmentDescription depthAttachment{};
+  depthAttachment.format = findDepthFormat();
+  depthAttachment.samples = vk::SampleCountFlagBits::e1;
+  depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+  depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+  depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+  depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+  depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
+  depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+  vk::AttachmentReference depthAttachmentRef{};
+  depthAttachmentRef.attachment = 1;
+  depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
   vk::AttachmentDescription colorAttachment = {};
   colorAttachment.format = this->imageFormat;
   colorAttachment.samples = vk::SampleCountFlagBits::e1;
@@ -246,12 +268,28 @@ void Swapchain::createRenderPass() {
   subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &colorAttachmentRef;
+  subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+  vk::SubpassDependency dependency = {};
+  dependency.dstSubpass = 0;
+  dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite |
+                             vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+  dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                            vk::PipelineStageFlagBits::eEarlyFragmentTests;
+
+  std::array<vk::AttachmentDescription, 2> attachments = {colorAttachment,
+                                                          depthAttachment};
 
   vk::RenderPassCreateInfo renderPassInfo = {};
-  renderPassInfo.attachmentCount = 1;
-  renderPassInfo.pAttachments = &colorAttachment;
+  renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+  renderPassInfo.pAttachments = attachments.data();
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpass;
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &dependency;
 
   try {
     this->renderPass = this->device.get()->createRenderPass(renderPassInfo);
@@ -262,23 +300,74 @@ void Swapchain::createRenderPass() {
   }
 }
 
+void Swapchain::createDepthResources() {
+  this->depthFormat = findDepthFormat();
+
+  this->depthImages.resize(imageCount());
+  this->depthImageMemorys.resize(imageCount());
+  this->depthImageViews.resize(imageCount());
+
+  for (size_t i = 0; i < this->depthImages.size(); i++) {
+    vk::ImageCreateInfo imageInfo{};
+    imageInfo.imageType = vk::ImageType::e2D;
+    imageInfo.extent.width = width();
+    imageInfo.extent.height = height();
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = this->depthFormat;
+    imageInfo.tiling = vk::ImageTiling::eOptimal;
+    imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+    imageInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+    imageInfo.samples = vk::SampleCountFlagBits::e1;
+    imageInfo.sharingMode = vk::SharingMode::eExclusive;
+
+    this->device.createImageWithInfo(
+        imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal,
+        this->depthImages[i], depthImageMemorys[i]);
+
+    vk::ImageViewCreateInfo viewInfo{};
+    viewInfo.image = this->depthImages[i];
+    viewInfo.viewType = vk::ImageViewType::e2D;
+    viewInfo.format = depthFormat;
+    viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+
+    try {
+      vk::Result result = this->device.get()->createImageView(
+          &viewInfo, nullptr, &depthImageViews[i]);
+      if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+    } catch (const vk::SystemError& error) {
+      log::fatal("failed to create texture image view. Error: ", error.what());
+      throw std::runtime_error("failed to create texture image view");
+    }
+  }
+  log::verbose("created all depth resources");
+}
+
 void Swapchain::createFramebuffers() {
-  this->framebuffers.resize(this->imageViews.size());
-  for (size_t i = 0; i < this->imageViews.size(); i++) {
-    vk::ImageView attachments[] = {this->imageViews[i]};
+  this->framebuffers.resize(imageCount());
+
+  for (size_t i = 0; i < imageCount(); i++) {
+    std::array<vk::ImageView, 2> attachments = {this->imageViews[i],
+                                                this->depthImageViews[i]};
 
     vk::FramebufferCreateInfo createInfo = {};
     createInfo.renderPass = this->renderPass;
-    createInfo.attachmentCount = 1;
-    createInfo.pAttachments = attachments;
-    createInfo.width = this->extent.width;
-    createInfo.height = this->extent.height;
+    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    createInfo.pAttachments = attachments.data();
+    createInfo.width = width();
+    createInfo.height = height();
     createInfo.layers = 1;
+
     try {
       this->framebuffers[i] = this->device.get()->createFramebuffer(createInfo);
       log::verbose("created vk::Frambuffer");
-    } catch (const vk::SystemError& err) {
-      log::verbose("failed to create vk::Framebuffer");
+    } catch (const vk::SystemError& error) {
+      log::verbose("failed to create vk::Framebuffer. Error: ", error.what());
       throw std::runtime_error("failed to create vk::Framebuffer");
     }
   }
@@ -355,6 +444,14 @@ vk::Extent2D Swapchain::chooseExtent(
                    capabilities.maxImageExtent.height);
     return choosenExtent;
   }
+}
+
+vk::Format Swapchain::findDepthFormat() {
+  return this->device.findSupportedFormat(
+      {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint,
+       vk::Format::eD24UnormS8Uint},
+      vk::ImageTiling::eOptimal,
+      vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }
 
 }  // namespace hep
