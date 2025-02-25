@@ -29,9 +29,14 @@ class Swapchain {
   vk::ImageView getImageView(int index) { return this->imageViews.at(index); }
   size_t imageCount() { return this->images.size(); }
   vk::Format getImageFormat() { return this->imageFormat; }
-  VkExtent2D getExtent() { return this->extent; }
+  vk::Extent2D getExtent() { return this->extent; }
   u32 width() { return this->extent.width; }
   u32 height() { return this->extent.height; }
+
+  float extentAspectRatio() {
+    return static_cast<float>(this->extent.width) /
+           static_cast<float>(this->extent.height);
+  }
 
   vk::Result acquireNextImage(u32* imageIndex);
   vk::Result submitCommandBuffers(const vk::CommandBuffer* buffers,
