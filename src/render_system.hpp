@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "device.hpp"
+#include "frame_info.hpp"
 #include "model.hpp"
 #include "pipeline.hpp"
 
@@ -33,7 +34,7 @@ class RenderSystem {
   RenderSystem(Device& device, vk::RenderPass renderPass);
   ~RenderSystem();
 
-  void render(vk::CommandBuffer commandBuffer, glm::vec2 windowExtent);
+  void render(vk::CommandBuffer commandBuffer, FrameInfo frameInfo);
 
  private:
   void createPipelineLayout();
