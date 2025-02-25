@@ -5,9 +5,13 @@ LDFLAGS := -Llib/glfw/src -lglfw3 -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXran
 .PHONY: TARGET 
 default: TARGET
 
-OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o build/renderer.o build/model.o build/engine.o
+OBJECT_FILES := build/window.o build/device.o build/swapchain.o build/pipeline.o build/renderer.o build/model.o build/render_system.o build/engine.o
 
 build/engine.o: src/engine.cpp src/engine.hpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
+
+build/render_system.o: src/render_system.cpp src/render_system.hpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -I$(GLFW_INCLUDE) -I$(GLM_INCLUDE) -c $< -o $@
 
