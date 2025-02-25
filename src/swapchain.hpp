@@ -52,6 +52,7 @@ class Swapchain {
   void createSwapchain();
   void createImageViews();
   void createRenderPass();
+  void createDepthResources();
   void createFramebuffers();
   void createSyncObjects();
 
@@ -61,17 +62,26 @@ class Swapchain {
       const std::vector<vk::PresentModeKHR> availablePresentModes);
   vk::Extent2D chooseExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 
+  vk::Format findDepthFormat();
+
   Device& device;
+  vk::Extent2D extent;
+
   vk::SwapchainKHR swapchain;
   vk::SwapchainCreateInfoKHR swapchainCreateInfo;
-  std::vector<vk::Image> images;
-  vk::Format imageFormat;
-  vk::Extent2D extent;
-  std::vector<vk::ImageView> imageViews;
   std::shared_ptr<Swapchain> oldSwapchain;
+
+  vk::Format imageFormat;
+  std::vector<vk::Image> images;
+  std::vector<vk::ImageView> imageViews;
 
   vk::RenderPass renderPass;
   std::vector<vk::Framebuffer> framebuffers;
+
+  vk::Format depthFormat;
+  std::vector<vk::Image> depthImages;
+  std::vector<vk::DeviceMemory> depthImageMemorys;
+  std::vector<vk::ImageView> depthImageViews;
 
   std::vector<vk::Semaphore> imageAvailableSemaphores;
   std::vector<vk::Semaphore> renderFinishedSemaphores;

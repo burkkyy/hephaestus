@@ -27,6 +27,13 @@ Swapchain::~Swapchain() {
   }
   log::verbose("destroyed sync objects");
 
+  for (size_t i = 0; i < this->depthImages.size(); i++) {
+    this->device.get()->destroyImageView(depthImageViews[i], nullptr);
+    this->device.get()->destroyImage(depthImages[i], nullptr);
+    this->device.get()->freeMemory(depthImageMemorys[i], nullptr);
+  }
+  log::verbose("destroyed depth resources");
+
   for (auto framebuffer : this->framebuffers) {
     this->device.get()->destroyFramebuffer(framebuffer);
     log::verbose("destroyed vk::Framebuffer");
@@ -131,6 +138,7 @@ void Swapchain::initialize() {
   createSwapchain();
   createImageViews();
   createRenderPass();
+  createDepthResources();
   createFramebuffers();
   createSyncObjects();
 }
@@ -262,6 +270,54 @@ void Swapchain::createRenderPass() {
   }
 }
 
+void Swapchain::createDepthResources() {
+  this->depthFormat = findDepthFormat();
+
+  this->depthImages.resize(imageCount());
+  this->depthImageMemorys.resize(imageCount());
+  this->depthImageViews.resize(imageCount());
+
+  for (size_t i = 0; i < this->depthImages.size(); i++) {
+    vk::ImageCreateInfo imageInfo{};
+    imageInfo.imageType = vk::ImageType::e2D;
+    imageInfo.extent.width = width();
+    imageInfo.extent.height = height();
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = this->depthFormat;
+    imageInfo.tiling = vk::ImageTiling::eOptimal;
+    imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+    imageInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+    imageInfo.samples = vk::SampleCountFlagBits::e1;
+    imageInfo.sharingMode = vk::SharingMode::eExclusive;
+
+    this->device.createImageWithInfo(
+        imageInfo, vk::MemoryPropertyFlagBits::eDeviceLocal,
+        this->depthImages[i], depthImageMemorys[i]);
+
+    vk::ImageViewCreateInfo viewInfo{};
+    viewInfo.image = this->depthImages[i];
+    viewInfo.viewType = vk::ImageViewType::e2D;
+    viewInfo.format = depthFormat;
+    viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+
+    try {
+      vk::Result result = this->device.get()->createImageView(
+          &viewInfo, nullptr, &depthImageViews[i]);
+      if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+    } catch (const vk::SystemError& error) {
+      log::fatal("failed to create texture image view. Error: ", error.what());
+      throw std::runtime_error("failed to create texture image view");
+    }
+  }
+  log::verbose("created all depth resources");
+}
+
 void Swapchain::createFramebuffers() {
   this->framebuffers.resize(this->imageViews.size());
   for (size_t i = 0; i < this->imageViews.size(); i++) {
@@ -355,6 +411,14 @@ vk::Extent2D Swapchain::chooseExtent(
                    capabilities.maxImageExtent.height);
     return choosenExtent;
   }
+}
+
+vk::Format Swapchain::findDepthFormat() {
+  return this->device.findSupportedFormat(
+      {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint,
+       vk::Format::eD24UnormS8Uint},
+      vk::ImageTiling::eOptimal,
+      vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }
 
 }  // namespace hep
