@@ -29,6 +29,11 @@ class Renderer {
     return this->commandBuffers.at(currentFrameIndex);
   }
 
+  float getAspectRatio() const { return this->swapchain->extentAspectRatio(); }
+  vk::Extent2D getCurrentFramebufferExtent() const {
+    return this->swapchain->getExtent();
+  }
+
   vk::CommandBuffer beginFrame();
   void endFrame();
   void beginSwapChainRenderPass(vk::CommandBuffer commandBuffer);
