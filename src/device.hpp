@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <optional>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -34,7 +35,10 @@ class Device {
   Device(Window& window);
   ~Device();
 
-  const vk::Device* get() const { return &this->device.get(); }
+  const vk::Device* get() const {
+    assert(this->device);
+    return &this->device.get();
+  }
 
   void waitIdle() { this->device->waitIdle(); }
 
@@ -53,9 +57,17 @@ class Device {
 
   u32 findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties);
 
+  vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates,
+                                 vk::ImageTiling tiling,
+                                 vk::FormatFeatureFlags features);
+
   void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
                     vk::MemoryPropertyFlags properties, vk::Buffer& buffer,
                     vk::DeviceMemory& bufferMemory);
+
+  void createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
+                           vk::MemoryPropertyFlags properties, vk::Image& image,
+                           vk::DeviceMemory& imageMemory);
 
  private:
   void setupDebugMessenger();

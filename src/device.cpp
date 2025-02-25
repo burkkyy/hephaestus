@@ -53,7 +53,7 @@ void destroyDebugUtilsMessengerEXT(VkInstance instance,
 Device::Device(Window& window) : window{window} {
   createVulkanInstance();
   setupDebugMessenger();
-  window.createSurface(*instance, surface);
+  this->window.createSurface(*instance, surface);
   pickPhysicalDevice();
   createLogicalDevice();
   createCommandPool();
@@ -89,6 +89,25 @@ u32 Device::findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) {
   throw std::runtime_error("failed to find suitable memory type");
 }
 
+vk::Format Device::findSupportedFormat(
+    const std::vector<vk::Format>& candidates, vk::ImageTiling tiling,
+    vk::FormatFeatureFlags features) {
+  for (vk::Format format : candidates) {
+    vk::FormatProperties properties =
+        physicalDevice.getFormatProperties(format);
+
+    if ((tiling == vk::ImageTiling::eLinear &&
+         (properties.linearTilingFeatures & features) == features) ||
+        (tiling == vk::ImageTiling::eOptimal &&
+         (properties.optimalTilingFeatures & features) == features)) {
+      return format;
+    }
+  }
+
+  log::fatal("failed to find supported format");
+  throw std::runtime_error("failed to find supported format");
+}
+
 void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
                           vk::MemoryPropertyFlags properties,
                           vk::Buffer& buffer, vk::DeviceMemory& bufferMemory) {
@@ -98,14 +117,14 @@ void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
   bufferInfo.sharingMode = vk::SharingMode::eExclusive;
 
   try {
-    buffer = device->createBuffer(bufferInfo);
+    buffer = this->device->createBuffer(bufferInfo);
   } catch (const vk::SystemError& error) {
     log::fatal("failed to create vertex buffer");
     throw std::runtime_error("failed to create vertex buffer");
   }
 
   vk::MemoryRequirements memoryRequirements =
-      device->getBufferMemoryRequirements(buffer);
+      this->device->getBufferMemoryRequirements(buffer);
 
   vk::MemoryAllocateInfo allocInfo = {};
   allocInfo.allocationSize = memoryRequirements.size;
@@ -113,13 +132,50 @@ void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
       findMemoryType(memoryRequirements.memoryTypeBits, properties);
 
   try {
-    bufferMemory = device->allocateMemory(allocInfo);
+    bufferMemory = this->device->allocateMemory(allocInfo);
   } catch (const vk::SystemError& error) {
     log::fatal("failed to allocate vertex buffer memory");
     throw std::runtime_error("failed to allocate vertex buffer memory");
   }
 
-  device->bindBufferMemory(buffer, bufferMemory, 0);
+  this->device->bindBufferMemory(buffer, bufferMemory, 0);
+}
+
+void Device::createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
+                                 vk::MemoryPropertyFlags properties,
+                                 vk::Image& image,
+                                 vk::DeviceMemory& imageMemory) {
+  try {
+    vk::Result result = this->device->createImage(&imageInfo, nullptr, &image);
+    if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+  } catch (const vk::SystemError& error) {
+    log::fatal("failed to create image. Error: ", error.what());
+    throw std::runtime_error("failed to create image");
+  }
+
+  vk::MemoryRequirements memoryRequirements =
+      this->device->getImageMemoryRequirements(image);
+
+  vk::MemoryAllocateInfo allocateInfo{};
+  allocateInfo.allocationSize = memoryRequirements.size;
+  allocateInfo.memoryTypeIndex =
+      findMemoryType(memoryRequirements.memoryTypeBits, properties);
+
+  try {
+    vk::Result result =
+        this->device->allocateMemory(&allocateInfo, nullptr, &imageMemory);
+    if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+  } catch (const vk::SystemError& error) {
+    log::fatal("failed to allocate image memory. Error: ", error.what());
+    throw std::runtime_error("failed to allocate image memory");
+  }
+
+  try {
+    this->device->bindImageMemory(image, imageMemory, 0);
+  } catch (const vk::SystemError& error) {
+    log::fatal("failed to bind image memory. Error: ", error.what());
+    throw std::runtime_error("failed to bind image memory");
+  }
 }
 
 void Device::setupDebugMessenger() {
@@ -222,7 +278,7 @@ void Device::createVulkanInstance() {
   createInfo.ppEnabledLayerNames = enabledLayers.data();
 
   try {
-    instance = vk::createInstanceUnique(createInfo, nullptr);
+    this->instance = vk::createInstanceUnique(createInfo, nullptr);
   } catch (const vk::SystemError& err) {
     throw std::runtime_error("Failed to create instance!");
   }
@@ -335,7 +391,7 @@ void Device::createLogicalDevice() {
   }
 
   try {
-    device = physicalDevice.createDeviceUnique(createInfo);
+    this->device = this->physicalDevice.createDeviceUnique(createInfo);
     log::verbose("created vk::Device.");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create logical device.");
