@@ -43,6 +43,38 @@ add_subdirectory(external/glm)
 # Store source files
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
+# Store shader files and define build rules
+find_program(GLSL_VALIDATOR glslangValidator HINTS 
+${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
+/usr/bin 
+/usr/local/bin 
+${VULKAN_SDK_PATH}/Bin
+${VULKAN_SDK_PATH}/Bin32
+)
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+  "${PROJECT_SOURCE_DIR}/shaders/*.frag"
+  "${PROJECT_SOURCE_DIR}/shaders/*.vert"
+)
+
+set(SHADER_DIR shaders)
+set(SHADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${SHADER_DIR})
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL} NAME)
+  set(SPIRV "${SHADER_OUTPUT_DIR}/${FILE_NAME}.spv")
+  add_custom_command(
+    OUTPUT ${SPIRV}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADER_OUTPUT_DIR}
+    COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+    DEPENDS ${GLSL})
+  list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach(GLSL)
+
+add_custom_target(
+  ${SHADER_DIR}
+  DEPENDS ${SPIRV_BINARY_FILES}
+)
+
 # Define Executable
 add_executable(${PROJECT_NAME} app.cpp ${SRC_FILES} ${SPIRV_SHADERS})
 
@@ -50,7 +82,7 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC external/glfw/include
   PUBLIC external/glm/include
 )
-
+  
 target_link_libraries(${PROJECT_NAME}
   PRIVATE glfw
   PRIVATE glm
@@ -62,8 +94,10 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE Xrandr
   PRIVATE Xi
 )
-
+  
 set_target_properties(${PROJECT_NAME} PROPERTIES 
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR} 
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
   OUTPUT_NAME app.bin
 )
+
+add_dependencies(${PROJECT_NAME} ${SHADER_DIR})

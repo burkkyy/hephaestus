@@ -42,6 +42,7 @@ class Model {
   void createVertexBuffers(const std::vector<Vertex>& vertices);
 
   Device& device;
+
   vk::Buffer vertexBuffer;
   vk::DeviceMemory vertexBufferMemory;
   u32 vertexCount;
