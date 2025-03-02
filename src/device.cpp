@@ -141,6 +141,64 @@ void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
   this->device->bindBufferMemory(buffer, bufferMemory, 0);
 }
 
+vk::CommandBuffer Device::beginSingleTimeCommands() {
+  vk::CommandBufferAllocateInfo allocInfo{};
+  allocInfo.level = vk::CommandBufferLevel::ePrimary;
+  allocInfo.commandPool = this->commandPool;
+  allocInfo.commandBufferCount = 1;
+
+  vk::CommandBuffer commandBuffer;
+
+  try {
+    vk::Result result =
+        this->device->allocateCommandBuffers(&allocInfo, &commandBuffer);
+    if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+  } catch (const vk::SystemError& error) {
+    log::error("failed to allocate single time commandBuffer. Error: ",
+               error.what());
+    throw std::runtime_error("failed to allocate single time commandBuffer");
+  }
+
+  vk::CommandBufferBeginInfo beginInfo{};
+  beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+  try {
+    vk::Result result = commandBuffer.begin(&beginInfo);
+    if (result != vk::Result::eSuccess) { throw vk::SystemError(result); }
+  } catch (const vk::SystemError& error) {
+    log::error("failed to begin single time commandBuffer. Error: ",
+               error.what());
+    throw std::runtime_error("failed to begin single time commandBuffer");
+  }
+
+  return commandBuffer;
+}
+
+void Device::endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
+  commandBuffer.end();
+
+  vk::SubmitInfo submitInfo = {};
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffer;
+
+  this->graphicsQueue.submit(submitInfo, nullptr);
+  this->graphicsQueue.waitIdle();
+
+  this->device->freeCommandBuffers(commandPool, commandBuffer);
+}
+
+void Device::copyBuffer(vk::Buffer sourceBuffer, vk::Buffer destinationBuffer,
+                        vk::DeviceSize size) {
+  vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
+
+  vk::BufferCopy copyRegion = {};
+  copyRegion.size = size;
+
+  commandBuffer.copyBuffer(sourceBuffer, destinationBuffer, copyRegion);
+
+  endSingleTimeCommands(commandBuffer);
+}
+
 void Device::createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
                                  vk::MemoryPropertyFlags properties,
                                  vk::Image& image,
