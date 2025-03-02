@@ -27,5 +27,7 @@
   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, AllowShortBlocksOnASingleLine: Always }",
   "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
   "files.autoSave": "off",
-  "files.associations": {}
+  "files.associations": {
+    "stdexcept": "cpp"
+  }
 }
