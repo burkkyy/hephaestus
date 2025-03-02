@@ -61,14 +61,30 @@ void Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
 
   vk::DeviceSize bufferSize = sizeof(vertices[0]) * this->vertexCount;
 
-  this->device.createBuffer(bufferSize, vk::BufferUsageFlagBits::eVertexBuffer,
+  vk::Buffer stagingBuffer;
+  vk::DeviceMemory stagingBufferMemory;
+
+  this->device.createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
+                            vk::MemoryPropertyFlagBits::eHostVisible |
+                                vk::MemoryPropertyFlagBits::eHostCoherent,
+                            stagingBuffer, stagingBufferMemory);
+
+  void* data =
+      this->device.get()->mapMemory(stagingBufferMemory, 0, bufferSize);
+  memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+  this->device.get()->unmapMemory(stagingBufferMemory);
+
+  this->device.createBuffer(bufferSize,
+                            vk::BufferUsageFlagBits::eTransferDst |
+                                vk::BufferUsageFlagBits::eVertexBuffer,
                             vk::MemoryPropertyFlagBits::eHostVisible |
                                 vk::MemoryPropertyFlagBits::eHostCoherent,
                             this->vertexBuffer, this->vertexBufferMemory);
 
-  void* data = this->device.get()->mapMemory(vertexBufferMemory, 0, bufferSize);
-  memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-  this->device.get()->unmapMemory(vertexBufferMemory);
+  this->device.copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
+
+  this->device.get()->destroyBuffer(stagingBuffer);
+  this->device.get()->freeMemory(stagingBufferMemory);
 }
 
 }  // namespace hep
