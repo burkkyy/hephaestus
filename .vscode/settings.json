@@ -28,6 +28,7 @@
   "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
   "files.autoSave": "off",
   "files.associations": {
-    "stdexcept": "cpp"
+    "stdexcept": "cpp",
+    "compare": "cpp"
   }
 }
