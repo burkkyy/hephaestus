@@ -79,8 +79,9 @@ add_custom_target(
 add_executable(${PROJECT_NAME} app.cpp ${SRC_FILES} ${SPIRV_SHADERS})
 
 target_include_directories(${PROJECT_NAME}
-  PUBLIC external/glfw/include
-  PUBLIC external/glm/include
+  PRIVATE src
+  PRIVATE external/glfw/include
+  PRIVATE external/glm/include
 )
   
 target_link_libraries(${PROJECT_NAME}
