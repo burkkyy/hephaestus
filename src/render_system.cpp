@@ -31,7 +31,7 @@ RenderSystem::RenderSystem(Device& device, vk::RenderPass renderPass)
 }
 
 RenderSystem ::~RenderSystem() {
-  log::verbose("destroyed vk::PipelineLayout");
+  log::trace("destroyed vk::PipelineLayout");
   this->device.get()->destroyPipelineLayout(this->pipelineLayout);
 }
 
@@ -100,7 +100,7 @@ void RenderSystem::createPipelineLayout() {
   try {
     this->pipelineLayout =
         this->device.get()->createPipelineLayout(pipelineLayoutInfo);
-    log::verbose("created vk::PipelineLayout");
+    log::trace("created vk::PipelineLayout");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create vk::PipelineLayout");
     throw std::runtime_error("failed to create vk::PipelineLayout");

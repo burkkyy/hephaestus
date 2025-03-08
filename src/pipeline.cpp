@@ -12,7 +12,7 @@ Pipeline::Pipeline(Device& device) : device{device} {
 }
 
 Pipeline::~Pipeline() {
-  log::verbose("destoryed vk::Pipeline");
+  log::trace("destoryed vk::Pipeline");
   this->device.get()->destroyPipeline(this->graphicsPipeline);
 }
 
@@ -35,17 +35,17 @@ void Pipeline::create(const std::string& vertexShaderFilename,
   }
 
   if (this->graphicsPipeline) {
-    log::verbose("destorying old vk::Pipeline");
+    log::trace("destorying old vk::Pipeline");
     this->device.get()->destroyPipeline(this->graphicsPipeline);
   }
 
   vk::UniqueShaderModule vertexShaderModule =
       createShaderModule(vertexShaderFilename);
-  log::verbose("created vertex shader module");
+  log::trace("created vertex shader module");
 
   vk::UniqueShaderModule fragmentShaderModule =
       createShaderModule(fragmentShaderFilename);
-  log::verbose("created fragment shader module");
+  log::trace("created fragment shader module");
 
   vk::PipelineShaderStageCreateInfo shaderStages[] = {
       {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex,
@@ -91,7 +91,7 @@ void Pipeline::create(const std::string& vertexShaderFilename,
   try {
     this->graphicsPipeline =
         this->device.get()->createGraphicsPipeline(nullptr, pipelineInfo).value;
-    log::verbose("created vk::Pipeline");
+    log::trace("created vk::Pipeline");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create vk::Pipeline");
     throw std::runtime_error("failed to create vk::Pipeline");

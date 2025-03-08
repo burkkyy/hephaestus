@@ -39,10 +39,10 @@ Model::Model(Device& device, const std::vector<Vertex>& vertices)
 
 Model::~Model() {
   this->device.get()->destroyBuffer(this->vertexBuffer);
-  log::verbose("destroyed vertexBuffer");
+  log::trace("destroyed vertexBuffer");
 
   this->device.get()->freeMemory(this->vertexBufferMemory);
-  log::verbose("freed memory for vertexBuffer");
+  log::trace("freed memory for vertexBuffer");
 }
 
 void Model::bind(vk::CommandBuffer commandBuffer) {

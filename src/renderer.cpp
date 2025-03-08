@@ -127,7 +127,7 @@ void Renderer::createCommandBuffers() {
   try {
     this->commandBuffers =
         this->device.get()->allocateCommandBuffers(allocInfo);
-    log::verbose("created all commandBuffers");
+    log::trace("created all commandBuffers");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to allocate command buffers");
     throw std::runtime_error("failed to allocate command buffers");
