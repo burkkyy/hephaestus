@@ -1,6 +1,6 @@
 # Delegate
 
-Stores one or more functors, calls all stored functors in delegate invoke. Supports standalone functions and member functions with weak-pointer safety.
+Stores one or more functors, calls all stored functors on delegate invoke. Supports standalone functions and member functions with weak-pointer safety.
 
 ```cpp
 template <typename... A>
