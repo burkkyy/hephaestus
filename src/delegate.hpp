@@ -4,9 +4,12 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <typeinfo>
 #include <vector>
 
 #include "util/logger.hpp"
+
+#define DEFAULT_DELEGATE_FUNCTOR_ALLOC 5
 
 namespace hep {
 
@@ -55,7 +58,7 @@ class Delegate {
  public:
   using Functor = std::function<void(A...)>;
 
-  Delegate() { this->functors.reserve(10); }
+  Delegate() { this->functors.reserve(DEFAULT_DELEGATE_FUNCTOR_ALLOC); }
 
   void add(const Functor& func) { functors.push_back(func); }
 
@@ -79,7 +82,7 @@ class Delegate {
         try {
           this->functors[i](std::forward<A>(args)...);
         } catch (const expired_weak_object& e) {
-          log::error("delegate invoke error: " << e.what());
+          log::error("delegate invoke error: ", e.what());
           deadFunctorIndexs.push_back(i);
         }
       }
