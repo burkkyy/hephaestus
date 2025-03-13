@@ -8,7 +8,9 @@ The system is designed to be extensible, enabling users to define custom events 
 
 ## 1. Overiew
 
-The engine provides a list of events you can create and dispatch. (builtin events found in `events/`, when I get to writing engine api doc include list of builin events?)
+The engine provides a list of events you can create and dispatch. 
+
+> builtin events found in `events/`, when I get to writing engine api doc include list of builin events?
 
 The `EventSystem` is a [singleton class](https://www.geeksforgeeks.org/singleton-class-java/) `hep::EventSystem` found in `#include "events/event.hpp`.
 
