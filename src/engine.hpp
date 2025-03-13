@@ -4,6 +4,8 @@
 #include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
+#include "events/event.hpp"
+#include "events/key_event.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
@@ -22,10 +24,14 @@ class Engine {
 
   void run();
 
+  void onEvent(KeyReleasedEvent& event);
+
  private:
   Window window;
   Device device;
   Renderer renderer;
+
+  bool isRunning = true;
 };
 
 }  // namespace hep

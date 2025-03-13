@@ -22,7 +22,10 @@ void Engine::run() {
   auto startTime = std::chrono::high_resolution_clock::now();
   auto currentTime = startTime;
 
-  while (!this->window.shouldClose()) {
+  EventSystem::get().addListener<KeyReleasedEvent>(
+      std::bind(&Engine::onEvent, this, std::placeholders::_1));
+
+  while (this->isRunning && !this->window.shouldClose()) {
     glfwPollEvents();
 
     auto newTime = std::chrono::high_resolution_clock::now();
@@ -54,6 +57,13 @@ void Engine::run() {
   }
 
   this->device.waitIdle();
+}
+
+void Engine::onEvent(KeyReleasedEvent& event) {
+  if (event.getKeyCode() == Key::Escape) {
+    log::info("Escape key pressed. Quiting...");
+    this->isRunning = false;
+  }
 }
 
 }  // namespace hep

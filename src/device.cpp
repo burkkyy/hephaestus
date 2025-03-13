@@ -23,7 +23,7 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
   } else if (m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
     log::warning(pCallback_data->pMessage);
   } else {
-    log::verbose(pCallback_data->pMessage);
+    log::info(pCallback_data->pMessage);
   }
 
   return VK_FALSE;
@@ -63,14 +63,14 @@ Device::~Device() {
   if (this->enableValidationLayers) {
     destroyDebugUtilsMessengerEXT(this->instance.get(), this->debugMessenger,
                                   nullptr);
-    log::verbose("destroyed Vulkan Debugger");
+    log::trace("destroyed Vulkan Debugger");
   }
 
   this->device->destroyCommandPool(commandPool);
-  log::verbose("destroyed vk::CommandPool");
+  log::trace("destroyed vk::CommandPool");
 
   this->instance->destroySurfaceKHR(surface);
-  log::verbose("destroyed vk::SurfaceKHR");
+  log::trace("destroyed vk::SurfaceKHR");
 }
 
 u32 Device::findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) {
@@ -450,7 +450,7 @@ void Device::createLogicalDevice() {
 
   try {
     this->device = this->physicalDevice.createDeviceUnique(createInfo);
-    log::verbose("created vk::Device.");
+    log::trace("created vk::Device.");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create logical device.");
     throw std::exception();
@@ -480,7 +480,7 @@ void Device::createCommandPool() {
 
   try {
     this->commandPool = this->device->createCommandPool(createInfo);
-    log::verbose("created vk::CommandPool");
+    log::trace("created vk::CommandPool");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create vk::CommandPool");
     throw std::runtime_error("failed to create vk::CommandPool");
