@@ -1,6 +1,6 @@
 # Event System
 
-The event system is a flexible and type safe mechanism for managing and dispatching events within your a project. It allows functions to register as listeners (alias for callbacks) for specific events and dispatch events to invoke each listener.
+The event system is a flexible and type safe mechanism for managing and dispatching events within your a project. It allows functions to register as listeners (alias for callbacks) for specific events.
 
 The system is designed to be extensible, enabling users to define custom events without needing to recompile the entire engine, which would require downloading build dependencies etc.
 
