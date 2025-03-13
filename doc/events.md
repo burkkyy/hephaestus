@@ -4,7 +4,7 @@ The event system is a flexible and type safe mechanism for managing and dispatch
 
 The system is designed to be extensible, enabling users to define custom events without needing to recompile the entire engine, which would require downloading build dependencies etc.
 
-> Side note that as of Mar 12 2025 the project does not build to a shared library, the project is in early dev phase and so any mentioned include paths may also be incorrect
+> As of Mar 12 2025 the project does not build to a shared library, project is in early dev phase so mentioned include paths may also be incorrect
 
 ## 1. Overiew
 
