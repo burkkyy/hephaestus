@@ -31,10 +31,10 @@ void Window::createSurface(const vk::Instance& instance,
 void Window::keyEventCallback(GLFWwindow* window, int key, int scancode,
                               int action, int mods) {
   if (action == GLFW_PRESS) {
-    KeyPressedEvent event{key};
+    KeyPressedEvent event{static_cast<KeyCode>(key)};
     EventSystem::get().dispatch(event);
   } else if (action == GLFW_RELEASE) {
-    KeyReleasedEvent event{key};
+    KeyReleasedEvent event{static_cast<KeyCode>(key)};
     EventSystem::get().dispatch(event);
   }
 }
