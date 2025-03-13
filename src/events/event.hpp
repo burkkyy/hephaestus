@@ -22,14 +22,14 @@ enum EventCategoryFlags : u32 {
   EventCategoryMouseButton = BIT(4)
 };
 
-// The concrete subject
 class Event {
  public:
   virtual ~Event() = default;
 
   virtual const char* getName() const = 0;
-  virtual int getCategoryFlags() const = 0;
   virtual std::string toString() const { return getName(); }
+
+  virtual int getCategoryFlags() const { return EventCategoryFlags::None; };
 
   inline bool isInCategory(EventCategoryFlags category) {
     return getCategoryFlags() & category;
@@ -54,9 +54,8 @@ inline std::ostream& operator<<(std::ostream& os, const Event& e) {
  *
  * TODO heavy documentation is needed
  *
+ * @todo impl removing functors from delegate
  * @warning this class is in heavy development, use at your own risk
- * @warning Any member functions subscribed must be unsubscribe, otherwise this
- * will lead to undefiend behavior (SEGFAULT)
  * @warning NOT THREAD SAFE
  */
 class EventSystem {
@@ -77,8 +76,6 @@ class EventSystem {
   void addListener(std::function<void(E&)> f) {
     static_assert(std::is_base_of<Event, E>::value, "E must derive from Event");
 
-    log::trace("EventSystem::addListener: ", &f);
-
     EventType eventType = GET_EVENT_TYPE(E);
 
     // Ensures pointer to EventDelegate<E> is not null in unordered map
@@ -86,9 +83,7 @@ class EventSystem {
       this->eventDelegates[eventType] =
           std::make_unique<std::any>(EventDelegate<E>());
 
-      log::trace(
-          "EventSystem::addListener: unordered_map does not contain hash ",
-          eventType, ". Creating...");
+      log::trace("EventSystem creating new event type: ", eventType);
     }
 
     EventDelegate<E>& delegate =
@@ -100,8 +95,6 @@ class EventSystem {
   void addMethodListener(void (O::*memberFn)(E&), std::shared_ptr<O> obj) {
     static_assert(std::is_base_of<Event, E>::value, "E must derive from Event");
 
-    log::trace("EventSystem::addMethodListener: ");
-
     EventType eventType = GET_EVENT_TYPE(E);
 
     // Ensures pointer to EventDelegate<E> is not null in unordered map
@@ -109,9 +102,7 @@ class EventSystem {
       this->eventDelegates[eventType] =
           std::make_unique<std::any>(EventDelegate<E>());
 
-      log::trace(
-          "EventSystem::addListener: unordered_map does not contain hash ",
-          eventType, ". Creating...");
+      log::trace("EventSystem creating new event type: ", eventType);
     }
 
     EventDelegate<E>& delegate =
@@ -122,14 +113,9 @@ class EventSystem {
   template <class E>
   void dispatch(E& event) {
     static_assert(std::is_base_of<Event, E>::value, "E must derive from Event");
-    log::trace("EventSystem::dispatch: ", event.toString(), GET_EVENT_TYPE(E));
-
     EventType eventType = GET_EVENT_TYPE(E);
 
-    if (!this->eventDelegates.count(eventType)) {
-      log::warning("dispatched event with empty delegate: ", event.toString());
-      return;
-    }
+    if (!this->eventDelegates.count(eventType)) { return; }
 
     try {
       EventDelegate<E>& delegate =
