@@ -6,6 +6,7 @@
 #include <string>
 #include <vulkan/vulkan.hpp>
 
+#include "events/event.hpp"
 #include "util/types.hpp"
 
 namespace hep {
@@ -29,6 +30,8 @@ class Window {
 
  private:
   static void resizeCallback(GLFWwindow* window, int width, int height);
+  static void keyEventCallback(GLFWwindow* window, int key, int scancode,
+                               int action, int mods);
   void initialize();
 
   int width, height;

@@ -1,5 +1,6 @@
 #include "window.hpp"
 
+#include "events/key_event.hpp"
 #include "util/logger.hpp"
 
 namespace hep {
@@ -24,7 +25,18 @@ void Window::createSurface(const vk::Instance& instance,
   }
 
   surface = vk::SurfaceKHR(rawSurface);
-  log::verbose("Created vk::SurfaceKHR.");
+  log::trace("Created vk::SurfaceKHR.");
+}
+
+void Window::keyEventCallback(GLFWwindow* window, int key, int scancode,
+                              int action, int mods) {
+  if (action == GLFW_PRESS) {
+    KeyPressedEvent event{key};
+    EventSystem::get().dispatch(event);
+  } else if (action == GLFW_RELEASE) {
+    KeyReleasedEvent event{key};
+    EventSystem::get().dispatch(event);
+  }
 }
 
 void Window::resizeCallback(GLFWwindow* window, int width, int height) {
@@ -43,6 +55,7 @@ void Window::initialize() {
       glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
   glfwSetWindowUserPointer(this->window, this);
   glfwSetFramebufferSizeCallback(this->window, resizeCallback);
+  glfwSetKeyCallback(this->window, keyEventCallback);
 }
 
 }  // namespace hep
