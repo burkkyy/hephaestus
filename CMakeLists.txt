@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30.0)
+cmake_minimum_required(VERSION 3.22.2)
 
 project(hephaestus VERSION 0.0.0)
 
@@ -15,6 +15,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # if(CMAKE_BUILD_TYPE STREQUAL "release")
 #     add_definitions(-DNDEBUG)
 # endif()
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 
 # Download git submodules
 find_package(Git QUIET)
@@ -36,8 +39,9 @@ find_package(Vulkan REQUIRED)
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
 set(GLFW_BUILD_DOCS OFF)
-
+set(GLFW_VULKAN_STATIC ON CACHE BOOL "Link Vulkan statically with GLFW" FORCE)
 add_subdirectory(external/glfw)
+
 add_subdirectory(external/glm)
 
 # Store source files
@@ -45,11 +49,13 @@ file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
 # Store shader files and define build rules
 find_program(GLSL_VALIDATOR glslangValidator HINTS 
-${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
-/usr/bin 
-/usr/local/bin 
-${VULKAN_SDK_PATH}/Bin
-${VULKAN_SDK_PATH}/Bin32
+  ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
+  /usr/bin 
+  /usr/local/bin 
+  ${VULKAN_SDK_PATH}/Bin
+  ${VULKAN_SDK_PATH}/Bin32
+  ${VULKAN_SDK}/Bin
+  ${VULKAN_SDK}/Bin32
 )
 file(GLOB_RECURSE GLSL_SOURCE_FILES
   "${PROJECT_SOURCE_DIR}/shaders/*.frag"
@@ -83,22 +89,31 @@ target_include_directories(${PROJECT_NAME}
   PRIVATE external/glfw/include
   PRIVATE external/glm/include
 )
-  
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE glfw
-  PRIVATE glm
-  PRIVATE Vulkan::Vulkan
-  PRIVATE dl
-  PRIVATE pthread
-  PRIVATE X11
-  PRIVATE Xxf86vm
-  PRIVATE Xrandr
-  PRIVATE Xi
-)
-  
-set_target_properties(${PROJECT_NAME} PROPERTIES 
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
-  OUTPUT_NAME app.bin
-)
+
+# Platform specific
+if(UNIX AND NOT APPLE)  # Linux
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE glfw
+    PRIVATE glm
+    PRIVATE Vulkan::Vulkan
+    PRIVATE dl
+  )
+
+  set_target_properties(${PROJECT_NAME} PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
+    OUTPUT_NAME app.bin
+  )
+elseif(WIN32)  # Windows
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE glfw
+    PRIVATE glm
+    PRIVATE Vulkan::Vulkan
+  )
+
+  set_target_properties(${PROJECT_NAME} PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
+    OUTPUT_NAME app.exe
+  )
+endif()
 
 add_dependencies(${PROJECT_NAME} ${SHADER_DIR})
