@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "src/engine.hpp"
+#include "hephaestus/engine.hpp"
 
 int main(int argc, const char** argv) {
   (void)argc;
