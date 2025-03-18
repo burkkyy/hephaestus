@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.30.0)
+cmake_minimum_required(VERSION 3.22.2)
 
-project(hephaestus VERSION 0.0.0)
+set(NAME hephaestus)
+
+project(${NAME} VERSION 0.0.0)
 
 enable_language(CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -15,6 +17,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # if(CMAKE_BUILD_TYPE STREQUAL "release")
 #     add_definitions(-DNDEBUG)
 # endif()
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+elseif(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")  # Static runtime for MSVC
+endif()
 
 # Download git submodules
 find_package(Git QUIET)
@@ -31,26 +41,52 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   endif()
 endif()
 
-find_package(Vulkan REQUIRED)
+# 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
+if (DEFINED VULKAN_SDK_PATH)
+  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
+  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+  set(Vulkan_FOUND "True")
+else()
+  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
+  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
+endif()
+if (NOT Vulkan_FOUND)
+	message(FATAL_ERROR "Could not find Vulkan library!")
+else()
+	message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
+endif()
 
+# 2. GLFW (static link)
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
 set(GLFW_BUILD_DOCS OFF)
-
+set(GLFW_VULKAN_STATIC ON CACHE BOOL "Link Vulkan statically with GLFW" FORCE)
 add_subdirectory(external/glfw)
+set(GLFW_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/external/glfw/include")
+set(GLFW_LIBRARIES glfw)
+
+# 3. GLM (static link)
 add_subdirectory(external/glm)
+set(GLM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/external/glm/include")
+set(GLM_LIBRARIES glm)
 
-# Store source files
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+# 4. Store source files
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
-# Store shader files and define build rules
+# 5. Store shader files and define build rules
 find_program(GLSL_VALIDATOR glslangValidator HINTS 
-${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
-/usr/bin 
-/usr/local/bin 
-${VULKAN_SDK_PATH}/Bin
-${VULKAN_SDK_PATH}/Bin32
+  ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
+  /usr/bin 
+  /usr/local/bin 
+  ${VULKAN_SDK_PATH}/Bin
+  ${VULKAN_SDK_PATH}/Bin32
+  ${VULKAN_SDK}/Bin
+  ${VULKAN_SDK}/Bin32
 )
+if(NOT GLSL_VALIDATOR)
+  message(FATAL_ERROR "glslangValidator not found. Install Vulkan SDK or provide it in PATH.")
+endif()
+
 file(GLOB_RECURSE GLSL_SOURCE_FILES
   "${PROJECT_SOURCE_DIR}/shaders/*.frag"
   "${PROJECT_SOURCE_DIR}/shaders/*.vert"
@@ -76,29 +112,58 @@ add_custom_target(
 )
 
 # Define Executable
-add_executable(${PROJECT_NAME} app.cpp ${SRC_FILES} ${SPIRV_SHADERS})
 
-target_include_directories(${PROJECT_NAME}
-  PRIVATE src
-  PRIVATE external/glfw/include
-  PRIVATE external/glm/include
-)
-  
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE glfw
-  PRIVATE glm
-  PRIVATE Vulkan::Vulkan
-  PRIVATE dl
-  PRIVATE pthread
-  PRIVATE X11
-  PRIVATE Xxf86vm
-  PRIVATE Xrandr
-  PRIVATE Xi
-)
-  
-set_target_properties(${PROJECT_NAME} PROPERTIES 
-  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
-  OUTPUT_NAME app.bin
-)
+# Platform specific
+if(UNIX AND NOT APPLE)  # Linux
+  message(STATUS "Creating build for linux")
 
+  add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+  target_include_directories(${PROJECT_NAME} PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/include
+    ${GLFW_INCLUDE_DIRS}
+    ${GLM_INCLUDE_DIRS}
+  )
+
+  target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${GLFW_LIBRARIES}
+    ${GLM_LIBRARIES}
+    ${Vulkan_LIBRARIES}
+    dl
+  )
+
+  set_target_properties(${PROJECT_NAME} PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    OUTPUT_NAME hephaestus
+  )
+
+  target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
+elseif(WIN32)  # Windows
+  message(STATUS "Creating build for windows")
+
+  add_executable(${PROJECT_NAME} app.cpp ${SOURCES} ${SPIRV_SHADERS})
+
+  target_include_directories(${PROJECT_NAME} PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/include
+    ${GLFW_INCLUDE_DIRS}
+    ${GLM_INCLUDE_DIRS}
+  )
+
+  target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${GLFW_LIBRARIES}
+    ${GLM_LIBRARIES}
+    ${Vulkan_LIBRARIES}
+  )
+
+  set_target_properties(${PROJECT_NAME} PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} 
+    OUTPUT_NAME app
+  )
+endif()
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build")
 add_dependencies(${PROJECT_NAME} ${SHADER_DIR})

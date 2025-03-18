@@ -19,4 +19,5 @@ TODO
 ## Testing Instructions
 
 1. Build engine via `mkdir build && cd build && cmake .. && make`
-2. Run app via `cd build/ && ./app.bin`
+2. Build testbed via `cd testbed/ && cmake . && make`
+3. Run testbed via `./testbed`
