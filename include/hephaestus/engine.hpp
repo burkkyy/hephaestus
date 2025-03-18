@@ -1,13 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <vulkan/vulkan.hpp>
-
-#include "device.hpp"
-#include "events/event.hpp"
-#include "events/key_event.hpp"
-#include "renderer.hpp"
-#include "window.hpp"
 
 namespace hep {
 
@@ -24,14 +17,9 @@ class Engine {
 
   void run();
 
-  void onEvent(KeyReleasedEvent& event);
-
  private:
-  Window window;
-  Device device;
-  Renderer renderer;
-
-  bool isRunning = true;
+  class Impl;
+  std::unique_ptr<Impl> pImpl;
 };
 
 }  // namespace hep
