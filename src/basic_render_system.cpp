@@ -9,32 +9,16 @@ BasicRenderSystem::BasicRenderSystem(Device& device, vk::RenderPass renderPass)
   createPipelineLayout();
   createPipeline(renderPass);
 
-  Model::Builder firstTriangleBuilder{};
-  firstTriangleBuilder.vertices = {{{-0.5f, 0.5f}, {1, 0, 0}},
-                                   {{0.5f, 0.5f}, {0, 1, 0}},
-                                   {{0.0f, -0.5f}, {0, 0, 1}}};
+  Model::Builder quadBuilder{};
+  quadBuilder.vertices = {{{-1.0f, -1.0f}, {1, 0, 0}},
+                          {{-1.0f, 1.0f}, {1, 0, 0}},
+                          {{1.0f, 1.0f}, {0, 1, 0}},
+                          {{1.0f, -1.0f}, {0, 0, 1}}};
+  quadBuilder.indicies = {0, 1, 2, 0, 2, 3};
 
-  this->model = std::make_unique<Model>(this->device, firstTriangleBuilder);
+  this->quad = std::make_unique<Model>(this->device, quadBuilder);
 
-  Model::Builder secondTriangleBuilder{};
-  secondTriangleBuilder.vertices = {{{-1.0f, -1.0f}, {1, 0, 0}},
-                                    {{-1.0f, 1.0f}, {0, 1, 0}},
-                                    {{1.0f, 1.0f}, {0, 0, 1}}};
-
-  this->triangle1 =
-      std::make_unique<Model>(this->device, secondTriangleBuilder);
-
-  Model::Builder thirdTriangleBuilder{};
-  thirdTriangleBuilder.vertices = {{{-1.0f, -1.0f}, {1, 0, 0}},
-                                   {{1.0f, 1.0f}, {0, 1, 0}},
-                                   {{1.0f, -1.0f}, {0, 0, 1}}};
-
-  this->triangle2 = std::make_unique<Model>(this->device, thirdTriangleBuilder);
-
-  pushConstant.transform = {{1.0f, 0.0f, 0.0f, 0.0f},
-                            {0.0f, 1.0f, 0.0f, 0.0f},
-                            {0.0f, 0.0f, 1.0f, 0.0f},
-                            {0.0f, 0.0f, 0.0f, 1.0f}};
+  pushConstant.transform = glm::mat4(1.0f);
 }
 
 BasicRenderSystem ::~BasicRenderSystem() {
@@ -50,8 +34,7 @@ void BasicRenderSystem::render(vk::CommandBuffer commandBuffer,
                        frameInfo.currentFramebufferExtent.y,
                        frameInfo.elapsedTime, 0.0f};
 
-  // Triangle 1
-  triangle1->bind(commandBuffer);
+  quad->bind(commandBuffer);
 
   pushConstant.color = {1.0f, 0.0f, 0.0f, 1.0f};
   commandBuffer.pushConstants(
@@ -59,36 +42,7 @@ void BasicRenderSystem::render(vk::CommandBuffer commandBuffer,
       vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0,
       sizeof(PushConstantData), &pushConstant);
 
-  triangle1->draw(commandBuffer);
-
-  // Triangle 2
-  triangle2->bind(commandBuffer);
-
-  pushConstant.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
-  commandBuffer.pushConstants(
-      this->pipelineLayout,
-      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0,
-      sizeof(PushConstantData), &pushConstant);
-
-  triangle2->draw(commandBuffer);
-
-  // this->model->bind(commandBuffer);
-
-  // frameCount++;
-  // if (frameCount % 1000 == 0) {
-  //   frameCount = 0;
-
-  //   // translation
-  //   pushConstant.transform[3].x += 0.1f;
-  //   pushConstant.transform[3].y += 0.1f;
-  // }
-
-  // commandBuffer.pushConstants(this->pipelineLayout,
-  //                             vk::ShaderStageFlagBits::eVertex, 0,
-  //                             sizeof(PushConstantData), &pushConstant);
-
-  // this->model->draw(commandBuffer);
+  quad->draw(commandBuffer);
 }
 
 void BasicRenderSystem::createPipelineLayout() {

@@ -47,10 +47,8 @@ class BasicRenderSystem {
   Device& device;
   Pipeline pipeline;
   vk::PipelineLayout pipelineLayout;
-  std::unique_ptr<Model> model;
 
-  std::unique_ptr<Model> triangle1;
-  std::unique_ptr<Model> triangle2;
+  std::unique_ptr<Model> quad;
 };
 
 }  // namespace hep
