@@ -127,7 +127,7 @@ class EventSystem {
   }
 
  private:
-  EventSystem() = default;
+  EventSystem() { log::info("EventSystem Initialized: ", this); }
 
   std::unordered_map<EventType, std::unique_ptr<std::any>> eventDelegates;
 };
