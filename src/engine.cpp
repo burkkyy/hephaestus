@@ -1,5 +1,9 @@
 #include "hephaestus/engine.hpp"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_vulkan.h>
+
 #include <chrono>
 #include <memory>
 #include <vulkan/vulkan.hpp>
@@ -10,10 +14,13 @@
 #include "frame_info.hpp"
 #include "render_system.hpp"
 #include "renderer.hpp"
+#include "ui/ui_system.hpp"
 #include "util/logger.hpp"
 #include "window.hpp"
 
 namespace hep {
+
+static vk::DescriptorPool TempDescriptorPool = VK_NULL_HANDLE;
 
 class Engine::Impl {
  public:
@@ -25,7 +32,13 @@ class Engine::Impl {
         device{this->window},
         renderer{this->window, this->device} {}
 
-  ~Impl() = default;
+  ~Impl() {
+    if (TempDescriptorPool != VK_NULL_HANDLE) {
+      this->device.get()->destroyDescriptorPool(TempDescriptorPool);
+      TempDescriptorPool = VK_NULL_HANDLE;
+      log::info("destroyed descriptorPool");
+    }
+  };
 
   void run() {
     RenderSystem renderSystem{this->device,
@@ -36,6 +49,41 @@ class Engine::Impl {
 
     EventSystem::get().addListener<KeyReleasedEvent>(
         std::bind(&Impl::onEvent, this, std::placeholders::_1));
+
+    {
+      /**
+       * ripped from imgui glfw_vulkan example
+       *
+       * currently descriptor sets, pool etc is not implementated so using this
+       * quick fix for imgui
+       */
+      vk::DescriptorPoolSize pool_sizes[] = {
+          {vk::DescriptorType::eCombinedImageSampler,
+           IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE},
+      };
+      vk::DescriptorPoolCreateInfo pool_info = {};
+      pool_info.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+      pool_info.maxSets = 0;
+      for (vk::DescriptorPoolSize& pool_size : pool_sizes)
+        pool_info.maxSets += pool_size.descriptorCount;
+      pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+      pool_info.pPoolSizes = pool_sizes;
+
+      vk::Result result = this->device.get()->createDescriptorPool(
+          &pool_info, nullptr, &TempDescriptorPool);
+
+      if (result != vk::Result::eSuccess) {
+        log::fatal("failed to create destriptor pool");
+        throw std::runtime_error("failed to create descriptor pool");
+      }
+
+      log::info("created descriptorPool with pool size: ", pool_info.maxSets);
+    }
+
+    UISystem ui{this->window, this->device, this->renderer, TempDescriptorPool};
+
+    // Setup systems
+    ui.setup();
 
     while (this->isRunning && !this->window.shouldClose()) {
       glfwPollEvents();
@@ -59,9 +107,14 @@ class Engine::Impl {
         FrameInfo frameInfo{commandBuffer, this->renderer.getFrameIndex(),
                             elapsedTime, deltaTime, extentVec2};
 
+        // Update systems
+        ui.update(frameInfo);
+
         this->renderer.beginSwapChainRenderPass(commandBuffer);
 
+        // Render systems
         renderSystem.render(commandBuffer, frameInfo);
+        ui.render(commandBuffer);
 
         this->renderer.endSwapChainRenderPass(commandBuffer);
         this->renderer.endFrame();
