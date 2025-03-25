@@ -25,30 +25,30 @@ Swapchain::~Swapchain() {
     this->device.get()->destroySemaphore(this->imageAvailableSemaphores[i]);
     this->device.get()->destroyFence(this->inFlightFences[i]);
   }
-  log::trace("destroyed sync objects");
+  // log::trace("destroyed sync objects");
 
   for (size_t i = 0; i < this->depthImages.size(); i++) {
     this->device.get()->destroyImageView(depthImageViews[i], nullptr);
     this->device.get()->destroyImage(depthImages[i], nullptr);
     this->device.get()->freeMemory(depthImageMemorys[i], nullptr);
   }
-  log::trace("destroyed depth resources");
+  // log::trace("destroyed depth resources");
 
   for (auto framebuffer : this->framebuffers) {
     this->device.get()->destroyFramebuffer(framebuffer);
-    log::trace("destroyed vk::Framebuffer");
+    // log::trace("destroyed vk::Framebuffer");
   }
 
   this->device.get()->destroyRenderPass(this->renderPass);
-  log::trace("destroyed vk::RenderPass");
+  // log::trace("destroyed vk::RenderPass");
 
   for (auto imageView : imageViews) {
     this->device.get()->destroyImageView(imageView);
-    log::trace("destroyed vk::ImageView");
+    // log::trace("destroyed vk::ImageView");
   }
 
   this->device.get()->destroySwapchainKHR(this->swapchain);
-  log::trace("destroyed vk::SwapchainKHR");
+  // log::trace("destroyed vk::SwapchainKHR");
 }
 
 vk::Result Swapchain::acquireNextImage(u32* imageIndex) {
@@ -197,7 +197,7 @@ void Swapchain::createSwapchain() {
   try {
     this->swapchain =
         this->device.get()->createSwapchainKHR(this->swapchainCreateInfo);
-    log::trace("created vk::SwapchainKHR");
+    // log::trace("created vk::SwapchainKHR");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create swapchain. Error: ", err.what());
     throw std::runtime_error("failed to create swapchain");
@@ -232,7 +232,7 @@ void Swapchain::createImageViews() {
     }
   }
 
-  log::trace("created all vk::ImageView");
+  // log::trace("created all vk::ImageView");
 }
 
 void Swapchain::createRenderPass() {
@@ -293,7 +293,7 @@ void Swapchain::createRenderPass() {
 
   try {
     this->renderPass = this->device.get()->createRenderPass(renderPassInfo);
-    log::trace("created vk::RenderPass");
+    // log::trace("created vk::RenderPass");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create vk::RenderPass");
     throw std::runtime_error("failed to create vk::RenderPass");
@@ -345,7 +345,7 @@ void Swapchain::createDepthResources() {
       throw std::runtime_error("failed to create texture image view");
     }
   }
-  log::trace("created all depth resources");
+  // log::trace("created all depth resources");
 }
 
 void Swapchain::createFramebuffers() {
@@ -365,7 +365,7 @@ void Swapchain::createFramebuffers() {
 
     try {
       this->framebuffers[i] = this->device.get()->createFramebuffer(createInfo);
-      log::trace("created vk::Frambuffer");
+      // log::trace("created vk::Frambuffer");
     } catch (const vk::SystemError& error) {
       log::trace("failed to create vk::Framebuffer. Error: ", error.what());
       throw std::runtime_error("failed to create vk::Framebuffer");
@@ -389,7 +389,7 @@ void Swapchain::createSyncObjects() {
           this->device.get()->createFence({vk::FenceCreateFlagBits::eSignaled});
     }
 
-    log::trace("created all sync objects");
+    // log::trace("created all sync objects");
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create sync objects");
     throw std::runtime_error("failed to create sync objects");
