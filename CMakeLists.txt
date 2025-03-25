@@ -57,9 +57,11 @@ else()
 endif()
 
 # 2. GLFW (static link)
-set(GLFW_BUILD_EXAMPLES OFF)
-set(GLFW_BUILD_TESTS OFF)
-set(GLFW_BUILD_DOCS OFF)
+option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
+option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
+option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
+option(GLFW_INSTALL "Generate installation target" OFF)
+option(GLFW_DOCUMENT_INTERNALS "Include internals in documentation" OFF)
 set(GLFW_VULKAN_STATIC ON CACHE BOOL "Link Vulkan statically with GLFW" FORCE)
 add_subdirectory(external/glfw)
 set(GLFW_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/external/glfw/include")
@@ -70,10 +72,38 @@ add_subdirectory(external/glm)
 set(GLM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/external/glm/include")
 set(GLM_LIBRARIES glm)
 
-# 4. Store source files
+# 4. imgui (static link)
+set(IMGUI_DIR ${PROJECT_SOURCE_DIR}/external/imgui)
+add_library(imgui STATIC
+  ${IMGUI_DIR}/imgui.cpp
+  ${IMGUI_DIR}/imgui_draw.cpp
+  ${IMGUI_DIR}/imgui_demo.cpp   # remove this 
+  ${IMGUI_DIR}/imgui_tables.cpp
+  ${IMGUI_DIR}/imgui_widgets.cpp
+  ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+  ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+)
+
+target_include_directories(imgui PUBLIC
+  ${IMGUI_DIR}
+  ${IMGUI_DIR}/backends
+  ${GLFW_INCLUDE_DIRS}
+  ${Vulkan_INCLUDE_DIRS}
+)
+
+target_link_libraries(imgui PUBLIC
+  ${GLFW_LIBRARIES}
+  ${Vulkan_LIBRARIES}
+)
+
+if(UNIX AND NOT APPLE)
+  target_compile_options(imgui PRIVATE -fPIC)
+endif()
+
+# 5. Store source files
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
-# 5. Store shader files and define build rules
+# 6. Store shader files and define build rules
 find_program(GLSL_VALIDATOR glslangValidator HINTS 
   ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
   /usr/bin 
@@ -124,12 +154,15 @@ if(UNIX AND NOT APPLE)  # Linux
     ${PROJECT_SOURCE_DIR}/include
     ${GLFW_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS}
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
   )
 
   target_link_libraries(${PROJECT_NAME} PRIVATE
     ${GLFW_LIBRARIES}
     ${GLM_LIBRARIES}
     ${Vulkan_LIBRARIES}
+    imgui
     dl
   )
 
@@ -150,12 +183,15 @@ elseif(WIN32)  # Windows
     ${PROJECT_SOURCE_DIR}/include
     ${GLFW_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIRS}
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
   )
 
   target_link_libraries(${PROJECT_NAME} PRIVATE
     ${GLFW_LIBRARIES}
     ${GLM_LIBRARIES}
     ${Vulkan_LIBRARIES}
+    imgui
   )
 
   set_target_properties(${PROJECT_NAME} PROPERTIES 

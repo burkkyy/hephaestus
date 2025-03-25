@@ -116,6 +116,13 @@ void Renderer::endSwapChainRenderPass(vk::CommandBuffer commandBuffer) {
   commandBuffer.endRenderPass();
 }
 
+void Renderer::populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo) {
+  initInfo.RenderPass = getSwapChainRenderPass();
+  initInfo.MinImageCount = 2;
+  initInfo.ImageCount = getSwapChainImageCount();
+  initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+}
+
 void Renderer::createCommandBuffers() {
   this->commandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 
@@ -161,6 +168,8 @@ void Renderer::recreateSwapchain() {
   if (!oldSwapChain->compareSwapchainFormats(*this->swapchain.get())) {
     throw std::runtime_error("Swapchain image format has changed");
   }
+
+  log::trace("recreated swapchain");
 }
 
 }  // namespace hep
