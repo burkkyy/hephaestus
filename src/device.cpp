@@ -236,6 +236,17 @@ void Device::createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
   }
 }
 
+void Device::populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo) {
+  initInfo.Instance = this->instance.get();
+  initInfo.ApiVersion = HEP_VULKAN_API_VERSION;
+  initInfo.PhysicalDevice = this->physicalDevice;
+  initInfo.Device = this->device.get();
+
+  QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
+  initInfo.QueueFamily = indices.graphicsFamily.value();
+  initInfo.Queue = getGraphicsQueue();
+}
+
 void Device::setupDebugMessenger() {
   if (!this->enableValidationLayers) return;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui_impl_vulkan.h>
+
 #include <cassert>
 #include <optional>
 #include <vector>
@@ -7,6 +9,8 @@
 
 #include "util/types.hpp"
 #include "window.hpp"
+
+#define HEP_VULKAN_API_VERSION VK_API_VERSION_1_3
 
 namespace hep {
 
@@ -75,6 +79,8 @@ class Device {
   void createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
                            vk::MemoryPropertyFlags properties, vk::Image& image,
                            vk::DeviceMemory& imageMemory);
+
+  void populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo);
 
  private:
   void setupDebugMessenger();

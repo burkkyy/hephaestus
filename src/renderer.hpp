@@ -23,6 +23,10 @@ class Renderer {
     return this->swapchain->getRenderPass();
   }
 
+  size_t getSwapChainImageCount() const {
+    return this->swapchain->imageCount();
+  }
+
   vk::CommandBuffer getCurrentCommandBuffer() const {
     assert(this->isFrameStarted &&
            "Cannot get command buffer when frame not in progress");
@@ -44,6 +48,8 @@ class Renderer {
   void endFrame();
   void beginSwapChainRenderPass(vk::CommandBuffer commandBuffer);
   void endSwapChainRenderPass(vk::CommandBuffer commandBuffer);
+
+  void populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo);
 
  private:
   void createCommandBuffers();
