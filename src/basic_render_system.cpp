@@ -1,28 +1,35 @@
-#include "render_system.hpp"
+#include "basic_render_system.hpp"
 
 #include "util/logger.hpp"
 
 namespace hep {
 
-RenderSystem::RenderSystem(Device& device, vk::RenderPass renderPass)
+BasicRenderSystem::BasicRenderSystem(Device& device, vk::RenderPass renderPass)
     : device{device}, pipeline{device} {
   createPipelineLayout();
   createPipeline(renderPass);
 
-  std::vector<Model::Vertex> vertices{{{-0.5f, 0.5f}, {1, 0, 0}},
-                                      {{0.5f, 0.5f}, {0, 1, 0}},
-                                      {{0.0f, -0.5f}, {0, 0, 1}}};
-  this->model = std::make_unique<Model>(this->device, vertices);
+  Model::Builder firstTriangleBuilder{};
+  firstTriangleBuilder.vertices = {{{-0.5f, 0.5f}, {1, 0, 0}},
+                                   {{0.5f, 0.5f}, {0, 1, 0}},
+                                   {{0.0f, -0.5f}, {0, 0, 1}}};
 
-  std::vector<Model::Vertex> trig1Vertices{{{-1.0f, -1.0f}, {1, 0, 0}},
-                                           {{-1.0f, 1.0f}, {0, 1, 0}},
-                                           {{1.0f, 1.0f}, {0, 0, 1}}};
-  this->triangle1 = std::make_unique<Model>(this->device, trig1Vertices);
+  this->model = std::make_unique<Model>(this->device, firstTriangleBuilder);
 
-  std::vector<Model::Vertex> trig2Vertices{{{-1.0f, -1.0f}, {1, 0, 0}},
-                                           {{1.0f, 1.0f}, {0, 1, 0}},
-                                           {{1.0f, -1.0f}, {0, 0, 1}}};
-  this->triangle2 = std::make_unique<Model>(this->device, trig2Vertices);
+  Model::Builder secondTriangleBuilder{};
+  secondTriangleBuilder.vertices = {{{-1.0f, -1.0f}, {1, 0, 0}},
+                                    {{-1.0f, 1.0f}, {0, 1, 0}},
+                                    {{1.0f, 1.0f}, {0, 0, 1}}};
+
+  this->triangle1 =
+      std::make_unique<Model>(this->device, secondTriangleBuilder);
+
+  Model::Builder thirdTriangleBuilder{};
+  thirdTriangleBuilder.vertices = {{{-1.0f, -1.0f}, {1, 0, 0}},
+                                   {{1.0f, 1.0f}, {0, 1, 0}},
+                                   {{1.0f, -1.0f}, {0, 0, 1}}};
+
+  this->triangle2 = std::make_unique<Model>(this->device, thirdTriangleBuilder);
 
   pushConstant.transform = {{1.0f, 0.0f, 0.0f, 0.0f},
                             {0.0f, 1.0f, 0.0f, 0.0f},
@@ -30,13 +37,13 @@ RenderSystem::RenderSystem(Device& device, vk::RenderPass renderPass)
                             {0.0f, 0.0f, 0.0f, 1.0f}};
 }
 
-RenderSystem ::~RenderSystem() {
+BasicRenderSystem ::~BasicRenderSystem() {
   log::trace("destroyed vk::PipelineLayout");
   this->device.get()->destroyPipelineLayout(this->pipelineLayout);
 }
 
-void RenderSystem::render(vk::CommandBuffer commandBuffer,
-                          FrameInfo frameInfo) {
+void BasicRenderSystem::render(vk::CommandBuffer commandBuffer,
+                               FrameInfo frameInfo) {
   this->pipeline.bind(commandBuffer);
 
   pushConstant.data = {frameInfo.currentFramebufferExtent.x,
@@ -84,7 +91,7 @@ void RenderSystem::render(vk::CommandBuffer commandBuffer,
   // this->model->draw(commandBuffer);
 }
 
-void RenderSystem::createPipelineLayout() {
+void BasicRenderSystem::createPipelineLayout() {
   vk::PushConstantRange pushConstantRange{};
 
   pushConstantRange.stageFlags =
@@ -107,7 +114,7 @@ void RenderSystem::createPipelineLayout() {
   }
 }
 
-void RenderSystem::createPipeline(vk::RenderPass renderPass) {
+void BasicRenderSystem::createPipeline(vk::RenderPass renderPass) {
   assert(pipelineLayout != nullptr &&
          "Cannot create pipeline before pipeline layout");
 
