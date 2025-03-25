@@ -8,11 +8,11 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
+#include "basic_render_system.hpp"
 #include "device.hpp"
 #include "events/event.hpp"
 #include "events/key_event.hpp"
 #include "frame_info.hpp"
-#include "render_system.hpp"
 #include "renderer.hpp"
 #include "ui/ui_system.hpp"
 #include "util/logger.hpp"
@@ -41,8 +41,8 @@ class Engine::Impl {
   };
 
   void run() {
-    RenderSystem renderSystem{this->device,
-                              this->renderer.getSwapChainRenderPass()};
+    BasicRenderSystem basicRenderSystem{
+        this->device, this->renderer.getSwapChainRenderPass()};
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = startTime;
@@ -113,7 +113,7 @@ class Engine::Impl {
         this->renderer.beginSwapChainRenderPass(commandBuffer);
 
         // Render systems
-        renderSystem.render(commandBuffer, frameInfo);
+        basicRenderSystem.render(commandBuffer, frameInfo);
         ui.render(commandBuffer);
 
         this->renderer.endSwapChainRenderPass(commandBuffer);
