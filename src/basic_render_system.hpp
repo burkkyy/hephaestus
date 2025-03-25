@@ -26,13 +26,13 @@ struct PushConstantData {
 
  Currently there isn't enough render systems to make this "worth it"
 */
-class RenderSystem {
+class BasicRenderSystem {
  public:
-  RenderSystem(const RenderSystem&) = delete;
-  RenderSystem& operator=(const RenderSystem&) = delete;
+  BasicRenderSystem(const BasicRenderSystem&) = delete;
+  BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
 
-  RenderSystem(Device& device, vk::RenderPass renderPass);
-  ~RenderSystem();
+  BasicRenderSystem(Device& device, vk::RenderPass renderPass);
+  ~BasicRenderSystem();
 
   void render(vk::CommandBuffer commandBuffer, FrameInfo frameInfo);
 
@@ -47,10 +47,8 @@ class RenderSystem {
   Device& device;
   Pipeline pipeline;
   vk::PipelineLayout pipelineLayout;
-  std::unique_ptr<Model> model;
 
-  std::unique_ptr<Model> triangle1;
-  std::unique_ptr<Model> triangle2;
+  std::unique_ptr<Model> quad;
 };
 
 }  // namespace hep

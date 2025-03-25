@@ -29,10 +29,23 @@ class Model {
     // }
   };
 
+  /**
+   * Helper struct
+   *
+   * Temporarily stores vertices and indicies of a model before it
+   * can be moved into the model's vertex buffer and index buffer respectively
+   *
+   * TODO: move this documentation elsewhere (doc/ ?)
+   */
+  struct Builder {
+    std::vector<Vertex> vertices{};
+    std::vector<u32> indicies{};
+  };
+
   Model(const Model&) = delete;
   Model& operator=(const Model&) = delete;
 
-  Model(Device& device, const std::vector<Vertex>& vertices);
+  Model(Device& device, const Builder& builder);
   ~Model();
 
   void bind(vk::CommandBuffer commandBuffer);
@@ -40,12 +53,18 @@ class Model {
 
  private:
   void createVertexBuffers(const std::vector<Vertex>& vertices);
+  void createIndexBuffers(const std::vector<u32>& indicies);
 
   Device& device;
 
   vk::Buffer vertexBuffer;
   vk::DeviceMemory vertexBufferMemory;
   u32 vertexCount;
+
+  bool hasIndexBuffer = false;
+  vk::Buffer indexBuffer;
+  vk::DeviceMemory indexBufferMemory;
+  u32 indexCount;
 };
 
 }  // namespace hep
