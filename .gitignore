@@ -32,6 +32,7 @@ pids
 *.pid
 *.seed
 *.pid.lock
+imgui.ini
 
 # dotenv environment variables file
 .envrc
