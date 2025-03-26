@@ -16,7 +16,7 @@ namespace hep {
 class UISystem {
  public:
   UISystem(Window& window, Device& device, Renderer& renderer,
-           vk::DescriptorPool& descriptorPool);
+           const vk::DescriptorPool& descriptorPool);
   ~UISystem();
 
   void setup();

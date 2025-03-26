@@ -17,7 +17,7 @@ static void checkVulkanResult(VkResult error) {
 }
 
 UISystem::UISystem(Window& window, Device& device, Renderer& renderer,
-                   vk::DescriptorPool& descriptorPool) {
+                   const vk::DescriptorPool& descriptorPool) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
