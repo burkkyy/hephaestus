@@ -82,7 +82,7 @@ vk::Result Buffer::invalidate(vk::DeviceSize size, vk::DeviceSize offset) {
 vk::DescriptorBufferInfo Buffer::descriptorInfo(vk::DeviceSize size,
                                                 vk::DeviceSize offset) {
   return vk::DescriptorBufferInfo{
-      buffer,
+      this->buffer,
       offset,
       size,
   };
