@@ -40,6 +40,8 @@ class DescriptorPool {
 
   void resetPool();
 
+  const vk::DescriptorPool& get() { return this->descriptorPool; }
+
  private:
   Device& device;
   vk::DescriptorPool descriptorPool;
