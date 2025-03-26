@@ -23,7 +23,7 @@ std::unique_ptr<DescriptorSetLayout> DescriptorSetLayout::Builder::build()
 }
 
 DescriptorSetLayout::DescriptorSetLayout(
-    Device& Device,
+    Device& device,
     std::unordered_map<u32, vk::DescriptorSetLayoutBinding> bindings)
     : device{device}, bindings{bindings} {
   std::vector<vk::DescriptorSetLayoutBinding> setLayoutBindings{};

@@ -28,7 +28,7 @@ class DescriptorSetLayout {
   };
 
   DescriptorSetLayout(
-      Device& Device,
+      Device& device,
       std::unordered_map<u32, vk::DescriptorSetLayoutBinding> bindings);
   ~DescriptorSetLayout();
 
