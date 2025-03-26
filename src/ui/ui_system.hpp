@@ -15,15 +15,36 @@ namespace hep {
 
 class UISystem {
  public:
-  UISystem(Window& window, Device& device, Renderer& renderer,
-           const vk::DescriptorPool& descriptorPool);
+  UISystem(const UISystem&) = delete;
+  UISystem& operator=(const UISystem&) = delete;
+
+  class Builder {
+   public:
+    Builder(Window& window, Device& device, Renderer& renderer,
+            const vk::DescriptorPool& descriptorPool);
+
+    Builder& lightTheme();
+    Builder& darkTheme();
+    // Builder& setTheme();
+    Builder& setMultiViewport(bool enable);
+    Builder& setDocking(bool enable);
+    Builder& setKeyboard(bool enable);
+    Builder& addComponent(std::unique_ptr<UIComponent> component);
+    // Builder& addFont(); _TODO_
+    Builder& showDemoWindow();
+
+    std::unique_ptr<UISystem> build();
+
+   private:
+    std::vector<std::unique_ptr<UIComponent>> components;
+  };
+
+  UISystem(std::vector<std::unique_ptr<UIComponent>> components);
   ~UISystem();
 
   void setup();
   void update(const FrameInfo& frameInfo);
   void render(vk::CommandBuffer commandBuffer);
-
-  void addComponent(std::unique_ptr<UIComponent> component);
 
  private:
   bool showDemoWindow = true;

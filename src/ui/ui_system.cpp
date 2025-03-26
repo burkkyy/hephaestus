@@ -3,11 +3,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-#include "util/logger.hpp"
-
-// UI componenets
-#include "components/debug_overlay.hpp"
 #include "components/imgui_demo_window.hpp"
+#include "util/logger.hpp"
 
 namespace hep {
 
@@ -16,33 +13,10 @@ static void checkVulkanResult(VkResult error) {
   log::error("[vulkan] Error: vk::Result: ", error);
 }
 
-UISystem::UISystem(Window& window, Device& device, Renderer& renderer,
-                   const vk::DescriptorPool& descriptorPool) {
+UISystem::Builder::Builder(Window& window, Device& device, Renderer& renderer,
+                           const vk::DescriptorPool& descriptorPool) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
-
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad;             // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
-  // io.ConfigFlags |=
-  //   ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform
-  //  Windows
-  // io.ConfigViewportsNoAutoMerge = true;
-  // io.ConfigViewportsNoTaskBarIcon = true;
-
-  ImGui::StyleColorsDark();
-  // ImGui::StyleColorsLight();
-
-  // When viewports are enabled we tweak WindowRounding/WindowBg so platform
-  // windows can look identical to regular ones.
-  ImGuiStyle& style = ImGui::GetStyle();
-  if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-  }
 
   ImGui_ImplGlfw_InitForVulkan(window.getGLFWwindow(), true);
 
@@ -55,6 +29,76 @@ UISystem::UISystem(Window& window, Device& device, Renderer& renderer,
   ImGui_ImplVulkan_Init(&initInfo);
 }
 
+UISystem::Builder& UISystem::Builder::lightTheme() {
+  ImGui::StyleColorsLight();
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::darkTheme() {
+  ImGui::StyleColorsDark();
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::setMultiViewport(bool enable) {
+  ImGuiIO& io = ImGui::GetIO();
+  if (enable) {
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+  } else {
+    io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
+  }
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::setDocking(bool enable) {
+  ImGuiIO& io = ImGui::GetIO();
+  if (enable) {
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  } else {
+    io.ConfigFlags &= ~ImGuiConfigFlags_DockingEnable;
+  }
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::setKeyboard(bool enable) {
+  ImGuiIO& io = ImGui::GetIO();
+  if (enable) {
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+  } else {
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+  }
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::addComponent(
+    std::unique_ptr<UIComponent> component) {
+  this->components.push_back(std::move(component));
+  return *this;
+}
+
+UISystem::Builder& UISystem::Builder::showDemoWindow() {
+  this->components.push_back(std::make_unique<ImGuiDemoWindow>());
+  return *this;
+}
+
+std::unique_ptr<UISystem> UISystem::Builder::build() {
+  return std::make_unique<UISystem>(std::move(this->components));
+}
+
+UISystem::UISystem(std::vector<std::unique_ptr<UIComponent>> components)
+    : components{std::move(components)} {
+  /**
+   * When viewports are enabled we tweak WindowRounding/WindowBg so
+   * platform windows can look identical to regular ones.
+   */
+  ImGuiStyle& style = ImGui::GetStyle();
+  if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    style.WindowRounding = 0.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+  }
+}
+
 UISystem::~UISystem() {
   ImGui_ImplVulkan_Shutdown();
   ImGui_ImplGlfw_Shutdown();
@@ -62,9 +106,6 @@ UISystem::~UISystem() {
 }
 
 void UISystem::setup() {
-  addComponent(std::make_unique<DebugOverlay>());
-  // addComponent(std::make_unique<ImGuiDemoWindow>());
-
   for (auto& component : this->components) { component->setup(); }
 }
 
@@ -93,10 +134,6 @@ void UISystem::render(vk::CommandBuffer commandBuffer) {
   }
 
   ImGui_ImplVulkan_RenderDrawData(mainDrawData, commandBuffer);
-}
-
-void UISystem::addComponent(std::unique_ptr<UIComponent> component) {
-  this->components.push_back(std::move(component));
 }
 
 }  // namespace hep
