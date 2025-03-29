@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "events/event.hpp"
+#include "event.hpp"
 #include "key_codes.hpp"
 
 namespace hep {

@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "device.hpp"
+#include "rendering/core/device.hpp"
 
 namespace hep {
 

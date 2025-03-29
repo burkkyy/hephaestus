@@ -3,10 +3,10 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-#include "device.hpp"
-#include "swapchain.hpp"
+#include "core/device.hpp"
+#include "core/swapchain.hpp"
+#include "core/window.hpp"
 #include "util/types.hpp"
-#include "window.hpp"
 
 namespace hep {
 

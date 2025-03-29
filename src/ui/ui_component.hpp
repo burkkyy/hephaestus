@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include "frame_info.hpp"
+#include "rendering/frame_info.hpp"
 
 namespace hep {
 

@@ -12,19 +12,19 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "basic_render_system.hpp"
-#include "buffer.hpp"
-#include "descriptors/descriptor_pool.hpp"
-#include "descriptors/descriptor_set_layout.hpp"
-#include "descriptors/descriptor_writer.hpp"
-#include "device.hpp"
-#include "events/event.hpp"
-#include "events/key_event.hpp"
-#include "frame_info.hpp"
-#include "renderer.hpp"
+#include "event.hpp"
+#include "input/key_event.hpp"
+#include "rendering/buffer.hpp"
+#include "rendering/core/device.hpp"
+#include "rendering/core/window.hpp"
+#include "rendering/descriptors/descriptor_pool.hpp"
+#include "rendering/descriptors/descriptor_set_layout.hpp"
+#include "rendering/descriptors/descriptor_writer.hpp"
+#include "rendering/frame_info.hpp"
+#include "rendering/renderer.hpp"
+#include "systems/basic_render_system.hpp"
 #include "ui/ui_system.hpp"
 #include "util/logger.hpp"
-#include "window.hpp"
 
 // UI componenets
 #include "ui/components/debug_overlay.hpp"

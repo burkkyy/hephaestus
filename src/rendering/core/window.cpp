@@ -1,6 +1,6 @@
 #include "window.hpp"
 
-#include "events/key_event.hpp"
+#include "input/key_event.hpp"
 #include "util/logger.hpp"
 
 namespace hep {

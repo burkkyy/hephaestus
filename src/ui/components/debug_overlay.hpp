@@ -1,7 +1,7 @@
 #pragma once
 
-#include "events/event.hpp"
-#include "events/key_event.hpp"
+#include "event.hpp"
+#include "input/key_event.hpp"
 #include "ui/ui_component.hpp"
 #include "util/logger.hpp"
 
