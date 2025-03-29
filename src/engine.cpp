@@ -8,7 +8,15 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include "basic_render_system.hpp"
+#include "buffer.hpp"
+#include "descriptors/descriptor_pool.hpp"
+#include "descriptors/descriptor_set_layout.hpp"
+#include "descriptors/descriptor_writer.hpp"
 #include "device.hpp"
 #include "events/event.hpp"
 #include "events/key_event.hpp"
@@ -18,9 +26,14 @@
 #include "util/logger.hpp"
 #include "window.hpp"
 
+// UI componenets
+#include "ui/components/debug_overlay.hpp"
+
 namespace hep {
 
-static vk::DescriptorPool TempDescriptorPool = VK_NULL_HANDLE;
+struct GlobalUbo {
+  glm::mat4 projectionView{1.0f};
+};
 
 class Engine::Impl {
  public:
@@ -30,17 +43,56 @@ class Engine::Impl {
   Impl()
       : window{WINDOW_WIDTH, WINDOW_HEIGHT},
         device{this->window},
-        renderer{this->window, this->device} {}
+        renderer{this->window, this->device} {
+    this->imguiDescriptorPool =
+        DescriptorPool::Builder(this->device)
+            .addPoolSize(vk::DescriptorType::eCombinedImageSampler,
+                         IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+            .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+            .setMaxSets(IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+            .build();
 
-  ~Impl() {
-    if (TempDescriptorPool != VK_NULL_HANDLE) {
-      this->device.get()->destroyDescriptorPool(TempDescriptorPool);
-      TempDescriptorPool = VK_NULL_HANDLE;
-      log::info("destroyed descriptorPool");
-    }
-  };
+    this->globalDescriptorPool =
+        DescriptorPool::Builder(this->device)
+            .addPoolSize(vk::DescriptorType::eUniformBuffer,
+                         Swapchain::MAX_FRAMES_IN_FLIGHT)
+            .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+            .setMaxSets(Swapchain::MAX_FRAMES_IN_FLIGHT)
+            .build();
+  }
+
+  ~Impl() = default;
 
   void run() {
+    std::vector<std::unique_ptr<Buffer>> uboBuffers(
+        Swapchain::MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < uboBuffers.size(); i++) {
+      uboBuffers[i] =
+          std::make_unique<Buffer>(this->device, sizeof(GlobalUbo), 1,
+                                   vk::BufferUsageFlagBits::eUniformBuffer,
+                                   vk::MemoryPropertyFlagBits::eHostVisible);
+
+      uboBuffers[i]->map();
+    }
+
+    auto globalDescriptorSetLayout =
+        DescriptorSetLayout::Builder(this->device)
+            .addBinding(0, vk::DescriptorType::eUniformBuffer,
+                        vk::ShaderStageFlagBits::eVertex)
+            .build();
+
+    std::vector<vk::DescriptorSet> globalDescriptorSets(
+        Swapchain::MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < globalDescriptorSets.size(); i++) {
+      auto bufferInfo = uboBuffers.at(i)->descriptorInfo();
+
+      DescriptorWriter(*globalDescriptorSetLayout, *this->globalDescriptorPool)
+          .writeBuffer(0, &bufferInfo)
+          .build(globalDescriptorSets.at(i));
+    }
+
     BasicRenderSystem basicRenderSystem{
         this->device, this->renderer.getSwapChainRenderPass()};
 
@@ -50,40 +102,17 @@ class Engine::Impl {
     EventSystem::get().addListener<KeyReleasedEvent>(
         std::bind(&Impl::onEvent, this, std::placeholders::_1));
 
-    {
-      /**
-       * ripped from imgui glfw_vulkan example
-       *
-       * currently descriptor sets, pool etc is not implementated so using this
-       * quick fix for imgui
-       */
-      vk::DescriptorPoolSize pool_sizes[] = {
-          {vk::DescriptorType::eCombinedImageSampler,
-           IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE},
-      };
-      vk::DescriptorPoolCreateInfo pool_info = {};
-      pool_info.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
-      pool_info.maxSets = 0;
-      for (vk::DescriptorPoolSize& pool_size : pool_sizes)
-        pool_info.maxSets += pool_size.descriptorCount;
-      pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
-      pool_info.pPoolSizes = pool_sizes;
-
-      vk::Result result = this->device.get()->createDescriptorPool(
-          &pool_info, nullptr, &TempDescriptorPool);
-
-      if (result != vk::Result::eSuccess) {
-        log::fatal("failed to create destriptor pool");
-        throw std::runtime_error("failed to create descriptor pool");
-      }
-
-      log::info("created descriptorPool with pool size: ", pool_info.maxSets);
-    }
-
-    UISystem ui{this->window, this->device, this->renderer, TempDescriptorPool};
+    this->ui = UISystem::Builder(this->window, this->device, this->renderer,
+                                 this->imguiDescriptorPool->get())
+                   .darkTheme()
+                   .setDocking(true)
+                   .setKeyboard(true)
+                   .addComponent(std::make_unique<DebugOverlay>())
+                   .build();
 
     // Setup systems
-    ui.setup();
+    this->ui->setup();
+    // basicRenderSystem.setup();
 
     while (this->isRunning && !this->window.shouldClose()) {
       glfwPollEvents();
@@ -107,14 +136,19 @@ class Engine::Impl {
         FrameInfo frameInfo{commandBuffer, this->renderer.getFrameIndex(),
                             elapsedTime, deltaTime, extentVec2};
 
-        // Update systems
-        ui.update(frameInfo);
+        // Update
+        GlobalUbo ubo{};
+        ubo.projectionView = glm::mat4{1.0f};
+        uboBuffers[frameInfo.frameIndex]->writeToBuffer(&ubo);
+        uboBuffers[frameInfo.frameIndex]->flush();
 
+        this->ui->update(frameInfo);
+
+        // Render
         this->renderer.beginSwapChainRenderPass(commandBuffer);
 
-        // Render systems
         basicRenderSystem.render(commandBuffer, frameInfo);
-        ui.render(commandBuffer);
+        this->ui->render(commandBuffer);
 
         this->renderer.endSwapChainRenderPass(commandBuffer);
         this->renderer.endFrame();
@@ -135,6 +169,11 @@ class Engine::Impl {
   Window window;
   Device device;
   Renderer renderer;
+
+  std::unique_ptr<DescriptorPool> imguiDescriptorPool{};
+  std::unique_ptr<DescriptorPool> globalDescriptorPool{};
+
+  std::unique_ptr<UISystem> ui{};
 
   bool isRunning = true;
 };
