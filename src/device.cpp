@@ -424,9 +424,8 @@ void Device::pickPhysicalDevice() {
     throw std::exception();
   }
 
-  vk::PhysicalDeviceProperties properties =
-      this->physicalDevice.getProperties();
-  log::verbose("Physical Device: ", properties.deviceName);
+  this->properties = this->physicalDevice.getProperties();
+  log::verbose("Physical Device: ", this->properties.deviceName);
 }
 
 void Device::createLogicalDevice() {

@@ -37,29 +37,16 @@ Model::Model(Device& device, const Builder& builder) : device{device} {
   createIndexBuffers(builder.indicies);
 }
 
-Model::~Model() {
-  this->device.get()->destroyBuffer(this->vertexBuffer);
-  log::trace("destroyed vertexBuffer");
-
-  this->device.get()->freeMemory(this->vertexBufferMemory);
-  log::trace("freed memory for vertexBuffer");
-
-  if (this->hasIndexBuffer) {
-    this->device.get()->destroyBuffer(this->indexBuffer);
-    log::trace("destroyed indexBuffer");
-
-    this->device.get()->freeMemory(this->indexBufferMemory);
-    log::trace("freed memory for indexBuffer");
-  }
-}
+Model::~Model() {}
 
 void Model::bind(vk::CommandBuffer commandBuffer) {
-  vk::Buffer buffers[] = {this->vertexBuffer};
+  vk::Buffer buffers[] = {this->vertexBuffer->getBuffer()};
   vk::DeviceSize offset[] = {0};
   commandBuffer.bindVertexBuffers(0, 1, buffers, offset);
 
   if (this->hasIndexBuffer) {
-    commandBuffer.bindIndexBuffer(this->indexBuffer, 0, vk::IndexType::eUint32);
+    commandBuffer.bindIndexBuffer(this->indexBuffer->getBuffer(), 0,
+                                  vk::IndexType::eUint32);
   }
 }
 
@@ -77,30 +64,28 @@ void Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
 
   vk::DeviceSize bufferSize = sizeof(vertices[0]) * this->vertexCount;
 
-  vk::Buffer stagingBuffer;
-  vk::DeviceMemory stagingBufferMemory;
+  u32 vertexSize = sizeof(vertices[0]);
 
-  this->device.createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
-                            vk::MemoryPropertyFlagBits::eHostVisible |
-                                vk::MemoryPropertyFlagBits::eHostCoherent,
-                            stagingBuffer, stagingBufferMemory);
+  Buffer stagingBuffer{
+      this->device,
+      vertexSize,
+      vertexCount,
+      vk::BufferUsageFlagBits::eTransferSrc,
+      vk::MemoryPropertyFlagBits::eHostVisible |
+          vk::MemoryPropertyFlagBits::eHostCoherent,
+  };
 
-  void* data =
-      this->device.get()->mapMemory(stagingBufferMemory, 0, bufferSize);
-  memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-  this->device.get()->unmapMemory(stagingBufferMemory);
+  stagingBuffer.map();
+  stagingBuffer.writeToBuffer((void*)vertices.data());
 
-  this->device.createBuffer(bufferSize,
-                            vk::BufferUsageFlagBits::eTransferDst |
-                                vk::BufferUsageFlagBits::eVertexBuffer,
-                            vk::MemoryPropertyFlagBits::eHostVisible |
-                                vk::MemoryPropertyFlagBits::eHostCoherent,
-                            this->vertexBuffer, this->vertexBufferMemory);
+  vertexBuffer =
+      std::make_unique<Buffer>(this->device, vertexSize, vertexCount,
+                               vk::BufferUsageFlagBits::eTransferDst |
+                                   vk::BufferUsageFlagBits::eVertexBuffer,
+                               vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-  this->device.copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
-
-  this->device.get()->destroyBuffer(stagingBuffer);
-  this->device.get()->freeMemory(stagingBufferMemory);
+  this->device.copyBuffer(stagingBuffer.getBuffer(),
+                          this->vertexBuffer->getBuffer(), bufferSize);
 }
 
 void Model::createIndexBuffers(const std::vector<u32>& indicies) {
@@ -111,30 +96,28 @@ void Model::createIndexBuffers(const std::vector<u32>& indicies) {
 
   vk::DeviceSize bufferSize = sizeof(indicies[0]) * this->indexCount;
 
-  vk::Buffer stagingBuffer;
-  vk::DeviceMemory stagingBufferMemory;
+  u32 indexSize = sizeof(indicies[0]);
 
-  this->device.createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc,
-                            vk::MemoryPropertyFlagBits::eHostVisible |
-                                vk::MemoryPropertyFlagBits::eHostCoherent,
-                            stagingBuffer, stagingBufferMemory);
+  Buffer stagingBuffer{
+      this->device,
+      indexSize,
+      indexCount,
+      vk::BufferUsageFlagBits::eTransferSrc,
+      vk::MemoryPropertyFlagBits::eHostVisible |
+          vk::MemoryPropertyFlagBits::eHostCoherent,
+  };
 
-  void* data =
-      this->device.get()->mapMemory(stagingBufferMemory, 0, bufferSize);
-  memcpy(data, indicies.data(), static_cast<size_t>(bufferSize));
-  this->device.get()->unmapMemory(stagingBufferMemory);
+  stagingBuffer.map();
+  stagingBuffer.writeToBuffer((void*)indicies.data());
 
-  this->device.createBuffer(bufferSize,
-                            vk::BufferUsageFlagBits::eTransferDst |
-                                vk::BufferUsageFlagBits::eIndexBuffer,
-                            vk::MemoryPropertyFlagBits::eHostVisible |
-                                vk::MemoryPropertyFlagBits::eHostCoherent,
-                            this->indexBuffer, this->indexBufferMemory);
+  indexBuffer =
+      std::make_unique<Buffer>(this->device, indexSize, indexCount,
+                               vk::BufferUsageFlagBits::eTransferDst |
+                                   vk::BufferUsageFlagBits::eIndexBuffer,
+                               vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-  this->device.copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
-
-  this->device.get()->destroyBuffer(stagingBuffer);
-  this->device.get()->freeMemory(stagingBufferMemory);
+  this->device.copyBuffer(stagingBuffer.getBuffer(),
+                          this->indexBuffer->getBuffer(), bufferSize);
 }
 
 }  // namespace hep

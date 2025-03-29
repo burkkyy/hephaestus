@@ -82,6 +82,8 @@ class Device {
 
   void populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo);
 
+  vk::PhysicalDeviceProperties properties;
+
  private:
   void setupDebugMessenger();
 
