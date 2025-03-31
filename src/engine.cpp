@@ -23,11 +23,13 @@
 #include "rendering/frame_info.hpp"
 #include "rendering/renderer.hpp"
 #include "systems/basic_render_system.hpp"
+#include "systems/shader_art_render_system.hpp"
 #include "ui/ui_system.hpp"
 #include "util/logger.hpp"
 
 // UI componenets
 #include "ui/components/debug_overlay.hpp"
+#include "ui/components/shader_art.hpp"
 
 namespace hep {
 
@@ -44,12 +46,13 @@ class Engine::Impl {
       : window{WINDOW_WIDTH, WINDOW_HEIGHT},
         device{this->window},
         renderer{this->window, this->device} {
+    // NOTE: pool size is being hardcoded here
     this->imguiDescriptorPool =
         DescriptorPool::Builder(this->device)
             .addPoolSize(vk::DescriptorType::eCombinedImageSampler,
-                         IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+                         IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE + 5)
             .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-            .setMaxSets(IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE)
+            .setMaxSets(IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE + 5)
             .build();
 
     this->globalDescriptorPool =
@@ -96,6 +99,8 @@ class Engine::Impl {
     BasicRenderSystem basicRenderSystem{
         this->device, this->renderer.getSwapChainRenderPass()};
 
+#define IMGUI_VIEWPORT_EXTENT {500, 500}
+
     auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = startTime;
 
@@ -113,6 +118,10 @@ class Engine::Impl {
     // Setup systems
     this->ui->setup();
     // basicRenderSystem.setup();
+
+    ShaderArtRenderSystem artRenderSystem{this->device, IMGUI_VIEWPORT_EXTENT};
+    ShaderArtWindow shaderArtWindow;
+    shaderArtWindow.setup(artRenderSystem.getImageTextureID());
 
     while (this->isRunning && !this->window.shouldClose()) {
       glfwPollEvents();
@@ -144,14 +153,21 @@ class Engine::Impl {
 
         this->ui->update(frameInfo);
 
+        artRenderSystem.render(commandBuffer, frameInfo);
+
         // Render
         this->renderer.beginSwapChainRenderPass(commandBuffer);
 
+        shaderArtWindow.updateTextureId(artRenderSystem.getImageTextureID());
+        shaderArtWindow.draw(frameInfo);
         basicRenderSystem.render(commandBuffer, frameInfo);
         this->ui->render(commandBuffer);
 
         this->renderer.endSwapChainRenderPass(commandBuffer);
         this->renderer.endFrame();
+
+        // Post Render
+        shaderArtWindow.postDraw();
       }
     }
 
