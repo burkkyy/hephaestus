@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "device.hpp"
+#include "core/device.hpp"
 
 namespace hep {
 

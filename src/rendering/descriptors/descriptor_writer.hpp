@@ -4,7 +4,7 @@
 
 #include "descriptor_pool.hpp"
 #include "descriptor_set_layout.hpp"
-#include "device.hpp"
+#include "rendering/core/device.hpp"
 
 namespace hep {
 

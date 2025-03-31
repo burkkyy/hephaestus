@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "model.hpp"
+#include "rendering/model.hpp"
 #include "util/logger.hpp"
 
 namespace hep {

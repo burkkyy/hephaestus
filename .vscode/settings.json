@@ -3,8 +3,6 @@
   "git.autofetch": true,
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "notebook.defaultFormatter": "esbenp.prettier-vscode",
   "editor.minimap.enabled": false,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
@@ -15,7 +13,8 @@
   "window.confirmSaveUntitledWorkspace": false,
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools",
-    "editor.codeLens": false
+    "editor.codeLens": false,
+    "editor.formatOnSave": true
   },
   "C_Cpp.default.includePath": [
     "/usr/include/c++/10",
@@ -92,5 +91,11 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "any": "cpp"
+  },
+  "files.exclude": {
+    "**/build": true
+  },
+  "search.exclude": {
+    "**/build": true
   }
 }

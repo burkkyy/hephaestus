@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "delegate.hpp"
 #include "util/utils.hpp"
 
 #define BIT(x) (1 << (x))

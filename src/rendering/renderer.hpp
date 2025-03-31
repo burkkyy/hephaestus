@@ -3,10 +3,10 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-#include "device.hpp"
-#include "swapchain.hpp"
+#include "core/device.hpp"
+#include "core/swapchain.hpp"
+#include "core/window.hpp"
 #include "util/types.hpp"
-#include "window.hpp"
 
 namespace hep {
 
@@ -40,8 +40,13 @@ class Renderer {
   }
 
   float getAspectRatio() const { return this->swapchain->extentAspectRatio(); }
+
   vk::Extent2D getCurrentFramebufferExtent() const {
     return this->swapchain->getExtent();
+  }
+
+  vk::Format getSwapChainImageFormat() const {
+    return this->swapchain->getImageFormat();
   }
 
   vk::CommandBuffer beginFrame();

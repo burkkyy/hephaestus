@@ -7,18 +7,12 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "device.hpp"
-#include "frame_info.hpp"
-#include "model.hpp"
-#include "pipeline.hpp"
+#include "rendering/core/device.hpp"
+#include "rendering/core/pipeline.hpp"
+#include "rendering/frame_info.hpp"
+#include "rendering/model.hpp"
 
 namespace hep {
-
-struct PushConstantData {
-  glm::mat4 transform;
-  glm::vec4 color;
-  glm::vec4 data;
-};
 
 /*
  Still considering making this a base class for all other render systems.
@@ -30,6 +24,12 @@ class BasicRenderSystem {
  public:
   BasicRenderSystem(const BasicRenderSystem&) = delete;
   BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
+
+  struct PushConstantData {
+    glm::mat4 transform;
+    glm::vec4 color;
+    glm::vec4 data;
+  };
 
   BasicRenderSystem(Device& device, vk::RenderPass renderPass);
   ~BasicRenderSystem();

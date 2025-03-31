@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "buffer.hpp"
-#include "device.hpp"
+#include "rendering/buffer.hpp"
+#include "rendering/core/device.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

@@ -6,7 +6,7 @@
 #include <string>
 #include <vulkan/vulkan.hpp>
 
-#include "events/event.hpp"
+#include "event.hpp"
 #include "util/types.hpp"
 
 namespace hep {
