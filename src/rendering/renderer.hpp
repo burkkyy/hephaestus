@@ -40,8 +40,13 @@ class Renderer {
   }
 
   float getAspectRatio() const { return this->swapchain->extentAspectRatio(); }
+
   vk::Extent2D getCurrentFramebufferExtent() const {
     return this->swapchain->getExtent();
+  }
+
+  vk::Format getSwapChainImageFormat() const {
+    return this->swapchain->getImageFormat();
   }
 
   vk::CommandBuffer beginFrame();
