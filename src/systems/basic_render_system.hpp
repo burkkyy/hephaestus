@@ -14,12 +14,6 @@
 
 namespace hep {
 
-struct PushConstantData {
-  glm::mat4 transform;
-  glm::vec4 color;
-  glm::vec4 data;
-};
-
 /*
  Still considering making this a base class for all other render systems.
  So I can create a set of render systems to update/render in batches
@@ -30,6 +24,12 @@ class BasicRenderSystem {
  public:
   BasicRenderSystem(const BasicRenderSystem&) = delete;
   BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
+
+  struct PushConstantData {
+    glm::mat4 transform;
+    glm::vec4 color;
+    glm::vec4 data;
+  };
 
   BasicRenderSystem(Device& device, vk::RenderPass renderPass);
   ~BasicRenderSystem();
