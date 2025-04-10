@@ -34,6 +34,11 @@ jobs:
           echo "Vulkan SDK Version=='$VULKAN_SDK_VERSION'"
           echo "VULKAN_SDK=='$VULKAN_SDK'"
           glslangValidator --version
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxinerama-dev
       
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
