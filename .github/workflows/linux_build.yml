@@ -42,13 +42,14 @@ jobs:
       
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
-        options: |
-          BUILD_TESTS=ON
-          BUILD_EXAMPLES=ON
-          IMGUI_IMPL_OPENGL=OFF
-          IMGUI_IMPL_VULKAN=ON
-          GLFW_BUILD_EXAMPLES=OFF
-          GLFW_BUILD_TESTS=OFF
+        with:
+          options: |
+            BUILD_TESTS=OFF
+            BUILD_EXAMPLES=OFF
+            IMGUI_IMPL_OPENGL=OFF
+            IMGUI_IMPL_VULKAN=ON
+            GLFW_BUILD_EXAMPLES=OFF
+            GLFW_BUILD_TESTS=OFF
         # Add any other CMake options your project needs
         # with:
         #   options: |
