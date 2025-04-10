@@ -52,6 +52,7 @@ jobs:
         shell: bash
         run: |
           ls -al
+          ls -al build/
 
       - name: Package Project Build
         shell: bash
