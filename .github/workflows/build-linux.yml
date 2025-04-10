@@ -6,20 +6,12 @@ on:
     tags: ["v*.*.*", "v*.*.*.*"]
 
 jobs:
-  build-and-release:
+  linux-build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Generate release tag
-        id: generate_release_tag
-        uses: amitsingh-007/next-release-tag@v5.1.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag_prefix: "v"
-          tag_template: "yyyy.mm.dd.i"
 
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
@@ -57,10 +49,13 @@ jobs:
       - name: Package Project Build
         shell: bash
         run: |
-          tar czf hephaestus.tar.gz build/libhephaestus.so build/shaders
+          mkdir hephaestus
+          cp build/libhephaestus.so
+          cp -r include/ hephaestus/include
+          tar czf hephaestus-linux-${{ steps.set_release_tag.outputs.release_tag }}.tar.gz hephaestus
 
-      - name: Create release
-        uses: ncipollo/release-action@v1
+      - name: Upload Engine Artifact
+        uses: actions/upload-artifact@v3
         with:
-          tag: ${{ steps.generate_release_tag.outputs.next_release_tag }}
-          artifacts: "./hephaestus.tar.gz"
+          name: engine-linux
+          path: hephaestus-linux-*.tar.gz

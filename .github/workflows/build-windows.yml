@@ -1,0 +1,44 @@
+name: Build for Linux
+
+on:
+  push:
+    branches: [main, dev]
+    tags: ["v*.*.*", "v*.*.*.*"]
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare MSVC Environment
+        uses: actions/setup-msvc@v2
+        with:
+          vs_version: 2022
+
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: 1.4.304.1
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Headers, SPIRV-Cross, SPIRV-Tools, SPIRV-Reflect, Glslang
+          vulkan-use-cache: true
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+
+      - name: Package Project Build
+        shell: powershell
+        run: |
+          $OutputDir = "hephaestus-windows"
+          New-Item -ItemType Directory -Path $OutputDir -Force
+          Copy-Item -Path "build/Release/Hephaestus.dll" -Destination "$OutputDir" # Adjust path and filename
+          Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
+          Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
+
+      - name: Upload Engine Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: engine-windows
+          path: hephaestus-windows-*.tar.gz
