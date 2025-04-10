@@ -31,8 +31,8 @@ jobs:
       - name: Test Vulkan SDK Install
         shell: bash
         run: |
-          echo "Vulkan SDK Version=='$VULKAN_SDK_VERSION'"
-          echo "VULKAN_SDK=='$VULKAN_SDK'"
+          printenv VULKAN_SDK_VERSION
+          printenv VULKAN_SDK
           glslangValidator --version
 
       - name: Install dependencies
@@ -53,7 +53,13 @@ jobs:
         run: |
           ls -al
 
-      # - name: Create release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     tag: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+      - name: Package Project Build
+        shell: bash
+        run: |
+          tar czf hephaestus.tar.gz build/libhephaestus.so build/shaders
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+          artifacts: "./hephaestus.tar.gz"
