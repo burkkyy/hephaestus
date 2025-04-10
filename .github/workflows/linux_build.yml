@@ -38,23 +38,20 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev
+          sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
       
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
-        with:
-          options: |
-            BUILD_TESTS=OFF
-            BUILD_EXAMPLES=OFF
-            IMGUI_IMPL_OPENGL=OFF
-            IMGUI_IMPL_VULKAN=ON
-            GLFW_BUILD_EXAMPLES=OFF
-            GLFW_BUILD_TESTS=OFF
         # Add any other CMake options your project needs
         # with:
         #   options: |
         #     BUILD_TESTS=ON
         #     BUILD_EXAMPLES=ON
+
+      - name: Check Project Build
+        shell: bash
+        run: |
+          ls -al
 
       # - name: Create release
       #   uses: ncipollo/release-action@v1
