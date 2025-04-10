@@ -34,6 +34,13 @@ jobs:
           echo "Vulkan SDK Version=='$VULKAN_SDK_VERSION'"
           echo "VULKAN_SDK=='$VULKAN_SDK'"
           glslangValidator --version
+      
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        # with:
+        #   options: |
+        #     BUILD_TESTS=ON
+        #     BUILD_EXAMPLES=ON
 
       # - name: Create release
       #   uses: ncipollo/release-action@v1
