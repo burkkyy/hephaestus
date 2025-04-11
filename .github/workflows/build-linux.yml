@@ -51,7 +51,7 @@ jobs:
           mkdir hephaestus
           cp build/libhephaestus.so hephaestus/libhephaestus.so
           cp -r include/ hephaestus/include
-          tar czf hephaestus-linux-${{ steps.set_release_tag.outputs.release_tag }}.tar.gz hephaestus
+          tar czf hephaestus-linux-${{ github.run_id }}.tar.gz hephaestus
 
       - name: Upload Engine Artifact
         uses: actions/upload-artifact@v4
