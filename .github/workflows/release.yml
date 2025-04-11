@@ -49,12 +49,12 @@ jobs:
           fi
 
       - name: Download Linux Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: engine-linux
 
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: engine-windows
 
