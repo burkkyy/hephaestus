@@ -1,0 +1,69 @@
+name: Create Release
+
+on:
+  workflow_run:
+    workflows: ["Build for Linux", "Build for Windows"]
+    types: [completed]
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Release Tag
+        id: get_tag
+        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        if: github.event.workflow_run.event == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+      - name: Generate Next Release Tag (if not a direct tag push)
+        id: generate_next_tag
+        if: github.event.workflow_run.event == 'push' && !startsWith(github.ref, 'refs/tags/v')
+        uses: amitsingh-007/next-release-tag@v5.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "v"
+          tag_template: "yyyy.mm.dd.i"
+
+      - name: Set Final Release Tag
+        id: set_final_tag
+        run: |
+          if [[ "${{ github.event.workflow_run.event }}" == "push" && "${{ startsWith(github.ref, 'refs/tags/v') }}" == "true" ]]; then
+            echo "FINAL_TAG=${{ steps.get_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT
+          else
+            echo "FINAL_TAG=${{ steps.generate_next_tag.outputs.next_release_tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine Prerelease
+        id: prerelease_check
+        run: |
+          if [[ "${{ startsWith(github.ref, 'refs/heads/dev') }}" == "true" || "${{ contains(github.ref, '-alpha') }}" == "true" || "${{ contains(github.ref, '-beta') }}" == "true" ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: engine-linux
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: engine-windows
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.set_final_tag.outputs.FINAL_TAG }}
+          artifacts: |
+            ./engine-linux/hephaestus-linux-*.tar.gz
+            ./engine-windows/hephaestus-windows-*.zip
+          draft: false
+          prerelease: ${{ steps.prerelease_check.outputs.PRERELEASE }}

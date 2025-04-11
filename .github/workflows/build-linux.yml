@@ -1,0 +1,60 @@
+name: Build for Linux
+
+on:
+  push:
+    branches: [main, dev]
+    tags: ["v*.*.*", "v*.*.*.*"]
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: 1.4.304.1
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Headers, SPIRV-Cross, SPIRV-Tools, SPIRV-Reflect, Glslang
+          vulkan-use-cache: true
+
+      - name: Test Vulkan SDK Install
+        shell: bash
+        run: |
+          printenv VULKAN_SDK_VERSION
+          printenv VULKAN_SDK
+          glslangValidator --version
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        # Add any other CMake options your project needs
+        # with:
+        #   options: |
+        #     BUILD_TESTS=ON
+        #     BUILD_EXAMPLES=ON
+
+      - name: Check Project Build
+        shell: bash
+        run: |
+          ls -al build/
+
+      - name: Package Project Build
+        shell: bash
+        run: |
+          mkdir hephaestus
+          cp build/libhephaestus.so hephaestus/libhephaestus.so
+          cp -r include/ hephaestus/include
+          tar czf hephaestus-linux-${{ github.run_id }}.tar.gz hephaestus
+
+      - name: Upload Engine Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-linux
+          path: hephaestus-linux-*.tar.gz
