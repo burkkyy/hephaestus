@@ -112,42 +112,19 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
+    needs: [linux-build, windows-build]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Get Release Tag
-        id: get_tag
-        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        if: startsWith(github.ref, 'refs/tags/v')
-
-      - name: Generate Next Release Tag (if not a direct tag push)
+      - name: Generate Next Release Tag
         id: generate_next_tag
-        if: ! startsWith(github.ref, 'refs/tags/v')
         uses: amitsingh-007/next-release-tag@v5.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag_prefix: "v"
           tag_template: "yyyy.mm.dd.i"
-
-      - name: Set Final Release Tag
-        id: set_final_tag
-        run: |
-          if [[ "${{ startsWith(github.ref, 'refs/tags/v') }}" == "true" ]]; then
-            echo "FINAL_TAG=${{ steps.get_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_TAG=${{ steps.generate_next_tag.outputs.next_release_tag }}" >> $GITHUB_OUTPUT
-          fi
-
-      # - name: Determine Prerelease
-      #   id: prerelease_check
-      #   run: |
-      #     if [[ "${{ startsWith(github.ref, 'refs/heads/dev') }}" == "true" || "${{ contains(github.ref, '-alpha') }}" == "true" || "${{ contains(github.ref, '-beta') }}" == "true" ]]; then
-      #       echo "PRERELEASE=true" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "PRERELEASE=false" >> $GITHUB_OUTPUT
-      #     fi
 
       - name: Download Linux Artifact
         uses: actions/download-artifact@v4
@@ -162,9 +139,8 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.set_final_tag.outputs.FINAL_TAG }}
+          tag: ${{ steps.generate_next_tag.outputs.next_release_tag }}
           artifacts: |
             ./engine-linux/hephaestus-linux-*.tar.gz
             ./engine-windows/hephaestus-windows-*.zip
           draft: false
-          #prerelease: ${{ steps.prerelease_check.outputs.PRERELEASE }}
