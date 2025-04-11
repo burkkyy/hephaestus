@@ -30,7 +30,7 @@ jobs:
         with:
           options: |
             CMAKE_BUILD_TYPE=Release
-          build_args: |
+          build-args: |
             --config Release
 
       - name: Check Project Build
