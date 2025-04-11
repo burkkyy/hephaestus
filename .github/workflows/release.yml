@@ -4,6 +4,9 @@ on:
   workflow_run:
     workflows: ["Build for Linux", "Build for Windows"]
     types: [completed]
+  push:
+    branches:
+      - main
 
 jobs:
   create-release:
