@@ -136,7 +136,7 @@ if(UNIX AND NOT APPLE)  # Linux
 elseif(WIN32)  # Windows
   message(STATUS "Creating build for windows")
 
-  add_executable(${PROJECT_NAME} app.cpp ${SOURCES} ${SPIRV_SHADERS})
+  add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
   target_include_directories(${PROJECT_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/src
