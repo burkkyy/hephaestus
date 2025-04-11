@@ -4,14 +4,10 @@
 #include <imgui_impl_vulkan.h>
 
 #include "components/imgui_demo_window.hpp"
+#include "util/check_result.hpp"
 #include "util/logger.hpp"
 
 namespace hep {
-
-static void checkVulkanResult(VkResult error) {
-  if (error == VK_SUCCESS) { return; }
-  log::error("[vulkan] Error: vk::Result: ", error);
-}
 
 UISystem::Builder::Builder(Window& window, Device& device, Renderer& renderer,
                            const vk::DescriptorPool& descriptorPool) {
@@ -24,7 +20,7 @@ UISystem::Builder::Builder(Window& window, Device& device, Renderer& renderer,
   device.populateImGuiInitInfo(initInfo);
   initInfo.DescriptorPool = descriptorPool;
   renderer.populateImGuiInitInfo(initInfo);
-  initInfo.CheckVkResultFn = checkVulkanResult;
+  initInfo.CheckVkResultFn = checkVkResult;
 
   ImGui_ImplVulkan_Init(&initInfo);
 }
