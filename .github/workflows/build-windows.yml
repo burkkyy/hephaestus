@@ -28,17 +28,17 @@ jobs:
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
 
-      - name: Package Project Build
-        shell: powershell
-        run: |
-          $OutputDir = "hephaestus-windows"
-          New-Item -ItemType Directory -Path $OutputDir -Force
-          Copy-Item -Path "build/Release/Hephaestus.dll" -Destination "$OutputDir" # Adjust path and filename
-          Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
-          Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
+      # - name: Package Project Build
+      #   shell: powershell
+      #   run: |
+      #     $OutputDir = "hephaestus-windows"
+      #     New-Item -ItemType Directory -Path $OutputDir -Force
+      #     Copy-Item -Path "build/Release/hephaestus.dll" -Destination "$OutputDir" # Adjust path and filename
+      #     Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
+      #     Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
 
-      - name: Upload Engine Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: engine-windows
-          path: hephaestus-windows-*.tar.gz
+      # - name: Upload Engine Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: engine-windows
+      #     path: hephaestus-windows-*.tar.gz
