@@ -28,8 +28,7 @@ jobs:
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
         with:
-          options: |
-            CMAKE_BUILD_TYPE=Release
+          options: -DCMAKE_BUILD_TYPE=Release
 
       - name: Check Project Build
         shell: powershell
