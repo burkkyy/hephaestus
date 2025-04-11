@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           mkdir hephaestus
-          cp build/libhephaestus.so
+          cp build/libhephaestus.so hephaestus/libhephaestus.so
           cp -r include/ hephaestus/include
           tar czf hephaestus-linux-${{ steps.set_release_tag.outputs.release_tag }}.tar.gz hephaestus
 
