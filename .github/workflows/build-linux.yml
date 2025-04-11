@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
-      
+
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
         # Add any other CMake options your project needs
@@ -54,7 +54,7 @@ jobs:
           tar czf hephaestus-linux-${{ steps.set_release_tag.outputs.release_tag }}.tar.gz hephaestus
 
       - name: Upload Engine Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: engine-linux
           path: hephaestus-linux-*.tar.gz
