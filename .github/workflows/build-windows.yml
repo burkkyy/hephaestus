@@ -27,6 +27,8 @@ jobs:
 
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
+        with:
+          cmake_args: -DCMAKE_BUILD_TYPE=Release
 
       - name: Check Project Build
         shell: powershell
@@ -39,9 +41,9 @@ jobs:
       - name: Package Project Build
         shell: powershell
         run: |
-          $OutputDir = "hephaestus-windows"
+          $OutputDir = "hephaestus"
           New-Item -ItemType Directory -Path $OutputDir -Force
-          Copy-Item -Path "build/hephaestus.dll" -Destination "$OutputDir" # Adjust path and filename
+          Copy-Item -Path "build/bin/Release/hephaestus.dll" -Destination "$OutputDir"
           Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
           Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
 
