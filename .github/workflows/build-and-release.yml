@@ -14,6 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Generate Next Release Tag
+        id: generate_next_tag
+        uses: amitsingh-007/next-release-tag@v5.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "v"
+          tag_template: "yyyy.mm.dd.i"
+
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.1
         with:
@@ -52,7 +60,7 @@ jobs:
           mkdir hephaestus
           cp build/libhephaestus.so hephaestus/libhephaestus.so
           cp -r include/ hephaestus/include
-          tar czf hephaestus-linux-${{ github.run_id }}.tar.gz hephaestus
+          tar czf hephaestus-linux-${{ steps.generate_next_tag.outputs.next_release_tag }}.tar.gz hephaestus
 
       - name: Upload Engine Artifact
         uses: actions/upload-artifact@v4
@@ -66,6 +74,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Generate Next Release Tag
+        id: generate_next_tag
+        uses: amitsingh-007/next-release-tag@v5.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "v"
+          tag_template: "yyyy.mm.dd.i"
 
       - name: Prepare MSVC Environment
         uses: TheMrMilchmann/setup-msvc-dev@v3
@@ -102,7 +118,7 @@ jobs:
           New-Item -ItemType Directory -Path $OutputDir -Force
           Copy-Item -Path "build/bin/Release/hephaestus.dll" -Destination "$OutputDir"
           Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
-          Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
+          Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ steps.generate_next_tag.outputs.next_release_tag }}.zip"
 
       - name: Upload Engine Artifact
         uses: actions/upload-artifact@v4
