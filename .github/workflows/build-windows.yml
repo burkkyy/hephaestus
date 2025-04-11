@@ -33,6 +33,8 @@ jobs:
         run: |
           Get-ChildItem -Force
           Get-ChildItem -Force build/
+          Get-ChildItem -Force build/bin
+          Get-ChildItem -Force build/x64
 
       - name: Package Project Build
         shell: powershell
