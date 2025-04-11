@@ -1,0 +1,170 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags: ["v*.*.*", "v*.*.*.*"]
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: 1.4.304.1
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Headers, SPIRV-Cross, SPIRV-Tools, SPIRV-Reflect, Glslang
+          vulkan-use-cache: true
+
+      - name: Test Vulkan SDK Install
+        shell: bash
+        run: |
+          printenv VULKAN_SDK_VERSION
+          printenv VULKAN_SDK
+          glslangValidator --version
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        # Add any other CMake options your project needs
+        # with:
+        #   options: |
+        #     BUILD_TESTS=ON
+        #     BUILD_EXAMPLES=ON
+
+      - name: Check Project Build
+        shell: bash
+        run: |
+          ls -al build/
+
+      - name: Package Project Build
+        shell: bash
+        run: |
+          mkdir hephaestus
+          cp build/libhephaestus.so hephaestus/libhephaestus.so
+          cp -r include/ hephaestus/include
+          tar czf hephaestus-linux-${{ github.run_id }}.tar.gz hephaestus
+
+      - name: Upload Engine Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-linux
+          path: hephaestus-linux-*.tar.gz
+
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare MSVC Environment
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x64
+
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: 1.4.304.1
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, SPIRV-Headers, SPIRV-Cross, SPIRV-Tools, SPIRV-Reflect, Glslang
+          vulkan-use-cache: true
+
+      - name: Build Project
+        uses: threeal/cmake-action@v2.1.0
+        with:
+          options: |
+            CMAKE_BUILD_TYPE=Release
+          build-args: |
+            --config Release
+
+      - name: Check Project Build
+        shell: powershell
+        run: |
+          Get-ChildItem -Force
+          Get-ChildItem -Force build/
+          Get-ChildItem -Force build/bin
+          Get-ChildItem -Force build/x64
+
+      - name: Package Project Build
+        shell: powershell
+        run: |
+          $OutputDir = "hephaestus"
+          New-Item -ItemType Directory -Path $OutputDir -Force
+          Copy-Item -Path "build/bin/Release/hephaestus.dll" -Destination "$OutputDir"
+          Copy-Item -Path "include\*" -Destination "$OutputDir\include" -Recurse -Force
+          Compress-Archive -Path "$OutputDir" -DestinationPath "hephaestus-windows-${{ github.run_id }}.zip"
+
+      - name: Upload Engine Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-windows
+          path: hephaestus-windows-*.zip
+
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Release Tag
+        id: get_tag
+        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        if: startsWith(github.ref, 'refs/tags/v')
+
+      - name: Generate Next Release Tag (if not a direct tag push)
+        id: generate_next_tag
+        if: ! startsWith(github.ref, 'refs/tags/v')
+        uses: amitsingh-007/next-release-tag@v5.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "v"
+          tag_template: "yyyy.mm.dd.i"
+
+      - name: Set Final Release Tag
+        id: set_final_tag
+        run: |
+          if [[ "${{ startsWith(github.ref, 'refs/tags/v') }}" == "true" ]]; then
+            echo "FINAL_TAG=${{ steps.get_tag.outputs.RELEASE_TAG }}" >> $GITHUB_OUTPUT
+          else
+            echo "FINAL_TAG=${{ steps.generate_next_tag.outputs.next_release_tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      # - name: Determine Prerelease
+      #   id: prerelease_check
+      #   run: |
+      #     if [[ "${{ startsWith(github.ref, 'refs/heads/dev') }}" == "true" || "${{ contains(github.ref, '-alpha') }}" == "true" || "${{ contains(github.ref, '-beta') }}" == "true" ]]; then
+      #       echo "PRERELEASE=true" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+      #     fi
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-linux
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-windows
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.set_final_tag.outputs.FINAL_TAG }}
+          artifacts: |
+            ./engine-linux/hephaestus-linux-*.tar.gz
+            ./engine-windows/hephaestus-windows-*.zip
+          draft: false
+          #prerelease: ${{ steps.prerelease_check.outputs.PRERELEASE }}
