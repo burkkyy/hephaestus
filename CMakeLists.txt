@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22.2)
 
 set(NAME hephaestus)
+set(CMAKE_BUILD_TYPE Release)
 
 project(${NAME} VERSION 0.0.0)
 
