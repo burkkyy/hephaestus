@@ -141,6 +141,6 @@ jobs:
         with:
           tag: ${{ steps.generate_next_tag.outputs.next_release_tag }}
           artifacts: |
-            ./engine-linux/hephaestus-linux-*.tar.gz
-            ./engine-windows/hephaestus-windows-*.zip
+            ./hephaestus-linux-*.tar.gz
+            ./hephaestus-windows-*.zip
           draft: false
