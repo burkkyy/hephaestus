@@ -12,7 +12,7 @@
   "diffEditor.ignoreTrimWhitespace": false,
   "window.confirmSaveUntitledWorkspace": false,
   "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.defaultFormatter": "xaver.clang-format",
     "editor.codeLens": false,
     "editor.formatOnSave": true
   },
@@ -27,6 +27,7 @@
   "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
   "files.autoSave": "off",
   "files.associations": {
+    "*.dbclient-js": "javascript",
     "stdexcept": "cpp",
     "compare": "cpp",
     "array": "cpp",
@@ -90,7 +91,23 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp",
-    "any": "cpp"
+    "any": "cpp",
+    "hephaestus": "cpp",
+    "bitset": "cpp",
+    "complex": "cpp",
+    "condition_variable": "cpp",
+    "forward_list": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "future": "cpp",
+    "mutex": "cpp",
+    "ranges": "cpp",
+    "semaphore": "cpp",
+    "shared_mutex": "cpp",
+    "stop_token": "cpp",
+    "thread": "cpp",
+    "cfenv": "cpp",
+    "typeindex": "cpp"
   },
   "files.exclude": {
     "**/build": true
