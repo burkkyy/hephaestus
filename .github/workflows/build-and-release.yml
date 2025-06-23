@@ -14,15 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Cache Git Submodules (External Dependencies)
-        id: cache-submodules
-        uses: actions/cache@v4
-        with:
-          path: external
-          key: ${{ runner.os }}-submodules-${{ hashFiles('external/**/CMakeLists.txt', '.gitmodules') }}
-          restore-keys: |
-            ${{ runner.os }}-submodules-
-
       - name: Generate Next Release Tag
         id: generate_next_tag
         uses: amitsingh-007/next-release-tag@v5.1.0
@@ -49,12 +40,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
-
-      - name: Ensure Submodules are Up-to-Date
-        if: steps.cache-submodules.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git submodule update --init --recursive
 
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
