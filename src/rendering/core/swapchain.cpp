@@ -12,7 +12,8 @@ Swapchain::Swapchain(Device& device, vk::Extent2D extent)
   initialize();
 }
 
-Swapchain::Swapchain(Device& device, vk::Extent2D extent,
+Swapchain::Swapchain(Device& device,
+                     vk::Extent2D extent,
                      std::shared_ptr<Swapchain> previous)
     : device{device}, extent{extent}, oldSwapchain{previous} {
   initialize();
@@ -69,7 +70,8 @@ vk::Result Swapchain::acquireNextImage(u32* imageIndex) {
 }
 
 vk::Result Swapchain::submitCommandBuffers(
-    const vk::CommandBuffer* commandBuffers, u32* imageIndex) {
+    const vk::CommandBuffer* commandBuffers,
+    u32* imageIndex) {
   assert(commandBuffers != nullptr);
   assert(imageIndex != nullptr);
 

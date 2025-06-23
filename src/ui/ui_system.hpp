@@ -20,7 +20,9 @@ class UISystem {
 
   class Builder {
    public:
-    Builder(Window& window, Device& device, Renderer& renderer,
+    Builder(Window& window,
+            Device& device,
+            Renderer& renderer,
             const vk::DescriptorPool& descriptorPool);
 
     Builder& lightTheme();

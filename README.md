@@ -1,33 +1,59 @@
 # hephaestus
 
-## Build Instructions
+Cross platform general purpose GPU engine primarily designed for graphics applications
 
-```sh
-mkdir -p build
-cd build
-cmake ..
-make
+## Usage
+
+```cpp
+#include <hephaestus>
+#include <iostream>
+
+class MyApplication : public hep::Application {
+ public:
+  MyApplication(hep::ApplicationConfig config) : hep::Application(config) {}
+
+  void onStart(){
+    std::cout << "Hello world!" < std::endl;
+  }
+};
+
+int main() {
+  hep::ApplicationConfig config {
+    .width = 600,
+    .height = 400,
+    .name = "My Application"
+  };
+
+  hep::Hephaestus heph(std::make_unique<MyApplication>(config));
+  heph.launch();
+
+  return 0;
+}
 ```
 
-## Dependencies
+## Getting Started
 
-- `cmake`
-- `vulkan-sdk`
+COMING SOON
 
-Install for Ubuntu
+## Developing on the engine
+
+### Dependencies
+
+- [cmake](https://cmake.org/)
+- [Vulkan SDK](https://vulkan.lunarg.com/) - With validation layers
+
+### Build instructions
 
 ```sh
-  sudo apt install vulkan-tools
-  sudo apt install libvulkan-dev
-  sudo apt install vulkan-validationlayers-dev spirv-tools
-  sudo apt install libglfw3-dev
-  sudo apt install libglm-dev
-  sudo apt install cmake
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cd build
+make -j
 ```
 
 ## Long term goals
 
 - Buffered event system (oppesed to current blocking event system)
+- Full ECS implementation
 
 ## Resources
 

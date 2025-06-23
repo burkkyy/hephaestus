@@ -8,8 +8,11 @@ std::unique_ptr<Frame> Frame::Builder::build() const {
                                  this->renderPass);
 }
 
-Frame::Frame(Device& device, vk::Extent2D extent, vk::Format format,
-             vk::ImageUsageFlags usage, vk::RenderPass renderPass)
+Frame::Frame(Device& device,
+             vk::Extent2D extent,
+             vk::Format format,
+             vk::ImageUsageFlags usage,
+             vk::RenderPass renderPass)
     : device{device},
       extent{extent},
       imageFormat{format},

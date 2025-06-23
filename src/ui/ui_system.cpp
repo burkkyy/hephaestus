@@ -9,7 +9,9 @@
 
 namespace hep {
 
-UISystem::Builder::Builder(Window& window, Device& device, Renderer& renderer,
+UISystem::Builder::Builder(Window& window,
+                           Device& device,
+                           Renderer& renderer,
                            const vk::DescriptorPool& descriptorPool) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

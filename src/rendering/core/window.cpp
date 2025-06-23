@@ -28,8 +28,11 @@ void Window::createSurface(const vk::Instance& instance,
   log::trace("Created vk::SurfaceKHR.");
 }
 
-void Window::keyEventCallback(GLFWwindow* window, int key, int scancode,
-                              int action, int mods) {
+void Window::keyEventCallback(GLFWwindow* window,
+                              int key,
+                              int scancode,
+                              int action,
+                              int mods) {
   if (action == GLFW_PRESS) {
     KeyPressedEvent event{static_cast<KeyCode>(key)};
     EventSystem::get().dispatch(event);

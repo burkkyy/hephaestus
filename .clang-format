@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+IndentWidth: 2
+ColumnLimit: 80
+AllowShortBlocksOnASingleLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+Cpp11BracedListStyle: true
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false

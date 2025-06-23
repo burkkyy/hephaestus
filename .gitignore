@@ -1,3 +1,9 @@
+# vscode files
+browse.vc.db*
+.vscode-test/
+.history/
+*.code-workspace
+
 # cmake files
 build/
 CMakeLists.txt.user

@@ -8,7 +8,8 @@ namespace hep {
 
 #define VK_CHECK_RESULT(X) checkVulkanResult(X, __FILE__, __LINE__)
 
-static void checkVulkanResult(vk::Result result, const char* file,
+static void checkVulkanResult(vk::Result result,
+                              const char* file,
                               const char* line) {
   if (result == vk::Result::eSuccess) { return; }
 

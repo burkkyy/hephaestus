@@ -65,19 +65,23 @@ class Device {
                                  vk::ImageTiling tiling,
                                  vk::FormatFeatureFlags features);
 
-  void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
-                    vk::MemoryPropertyFlags properties, vk::Buffer& buffer,
+  void createBuffer(vk::DeviceSize size,
+                    vk::BufferUsageFlags usage,
+                    vk::MemoryPropertyFlags properties,
+                    vk::Buffer& buffer,
                     vk::DeviceMemory& bufferMemory);
 
   vk::CommandBuffer beginSingleTimeCommands();
 
   void endSingleTimeCommands(vk::CommandBuffer commandBuffer);
 
-  void copyBuffer(vk::Buffer sourceBuffer, vk::Buffer destinationBuffer,
+  void copyBuffer(vk::Buffer sourceBuffer,
+                  vk::Buffer destinationBuffer,
                   vk::DeviceSize size);
 
   void createImageWithInfo(const vk::ImageCreateInfo& imageInfo,
-                           vk::MemoryPropertyFlags properties, vk::Image& image,
+                           vk::MemoryPropertyFlags properties,
+                           vk::Image& image,
                            vk::DeviceMemory& imageMemory);
 
   void populateImGuiInitInfo(ImGui_ImplVulkan_InitInfo& initInfo);

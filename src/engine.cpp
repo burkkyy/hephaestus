@@ -1,10 +1,9 @@
-#include "hephaestus/engine.hpp"
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
 #include <chrono>
+#include <hephaestus>  // SDK
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
@@ -42,8 +41,8 @@ class Engine::Impl {
   Impl(const Impl&) = delete;
   Impl& operator=(const Impl&) = delete;
 
-  Impl()
-      : window{WINDOW_WIDTH, WINDOW_HEIGHT},
+  explicit Impl(const ApplicationConfig& config)
+      : window{config.width, config.height, config.name},
         device{this->window},
         renderer{this->window, this->device} {
     // NOTE: pool size is being hardcoded here
@@ -99,8 +98,6 @@ class Engine::Impl {
     BasicRenderSystem basicRenderSystem{
         this->device, this->renderer.getSwapChainRenderPass()};
 
-#define IMGUI_VIEWPORT_EXTENT {500, 500}
-
     auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = startTime;
 
@@ -119,7 +116,7 @@ class Engine::Impl {
     this->ui->setup();
     // basicRenderSystem.setup();
 
-    ShaderArtRenderSystem artRenderSystem{this->device, IMGUI_VIEWPORT_EXTENT};
+    ShaderArtRenderSystem artRenderSystem{this->device, {500, 500}};
     ShaderArtWindow shaderArtWindow;
     shaderArtWindow.setup(artRenderSystem.getImageTextureID());
 
@@ -194,7 +191,8 @@ class Engine::Impl {
   bool isRunning = true;
 };
 
-Engine::Engine() : pImpl(std::make_unique<Impl>()) {}
+Engine::Engine(const ApplicationConfig& config)
+    : pImpl(std::make_unique<Impl>(config)) {}
 
 Engine::~Engine() = default;
 
