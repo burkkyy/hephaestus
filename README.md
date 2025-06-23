@@ -10,7 +10,7 @@ Cross platform general purpose GPU engine designed for real-time graphics applic
 
 class MyApplication : public hep::Application {
  public:
-  MyApplication(hep::ApplicationConfig) : hep::Application(config) {}
+  MyApplication(hep::ApplicationConfig config) : hep::Application(config) {}
 
   void onStart(){
     std::cout << "Hello world!" < std::endl;
