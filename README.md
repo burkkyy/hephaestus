@@ -1,6 +1,6 @@
 # hephaestus
 
-Cross platform general purpose GPU engine designed for real-time graphics applications
+Cross platform general purpose GPU engine primarily designed for graphics applications
 
 ## Usage
 
