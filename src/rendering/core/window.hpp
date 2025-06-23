@@ -35,8 +35,11 @@ class Window {
 
  private:
   static void resizeCallback(GLFWwindow* window, int width, int height);
-  static void keyEventCallback(GLFWwindow* window, int key, int scancode,
-                               int action, int mods);
+  static void keyEventCallback(GLFWwindow* window,
+                               int key,
+                               int scancode,
+                               int action,
+                               int mods);
   void initialize();
 
   int width, height;

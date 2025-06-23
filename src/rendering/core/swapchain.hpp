@@ -17,7 +17,8 @@ class Swapchain {
   Swapchain& operator=(const Swapchain&) = delete;
 
   Swapchain(Device& device, vk::Extent2D extent);
-  Swapchain(Device& device, vk::Extent2D extent,
+  Swapchain(Device& device,
+            vk::Extent2D extent,
             std::shared_ptr<Swapchain> previous);
   ~Swapchain();
 

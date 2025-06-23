@@ -3,7 +3,8 @@
 namespace hep {
 
 DescriptorPool::Builder& DescriptorPool::Builder::addPoolSize(
-    vk::DescriptorType descriptorType, u32 count) {
+    vk::DescriptorType descriptorType,
+    u32 count) {
   this->poolSizes.push_back({descriptorType, count});
   return *this;
 }
@@ -25,7 +26,9 @@ std::unique_ptr<DescriptorPool> DescriptorPool::Builder::build() const {
 }
 
 DescriptorPool::DescriptorPool(
-    Device& device, u32 maxSets, vk::DescriptorPoolCreateFlags poolFlags,
+    Device& device,
+    u32 maxSets,
+    vk::DescriptorPoolCreateFlags poolFlags,
     const std::vector<vk::DescriptorPoolSize>& poolSizes)
     : device{device} {
   vk::DescriptorPoolCreateInfo descriptorPoolInfo{};

@@ -28,7 +28,8 @@ class DescriptorPool {
     vk::DescriptorPoolCreateFlags poolFlags{};
   };
 
-  DescriptorPool(Device& device, u32 maxSets,
+  DescriptorPool(Device& device,
+                 u32 maxSets,
                  vk::DescriptorPoolCreateFlags poolFlags,
                  const std::vector<vk::DescriptorPoolSize>& poolSizes);
   ~DescriptorPool();

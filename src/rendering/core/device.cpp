@@ -30,7 +30,8 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
 }
 
 VkResult createDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    VkInstance instance,
+    const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pCallback) {
   auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
@@ -90,7 +91,8 @@ u32 Device::findMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) {
 }
 
 vk::Format Device::findSupportedFormat(
-    const std::vector<vk::Format>& candidates, vk::ImageTiling tiling,
+    const std::vector<vk::Format>& candidates,
+    vk::ImageTiling tiling,
     vk::FormatFeatureFlags features) {
   for (vk::Format format : candidates) {
     vk::FormatProperties properties =
@@ -108,9 +110,11 @@ vk::Format Device::findSupportedFormat(
   throw std::runtime_error("failed to find supported format");
 }
 
-void Device::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage,
+void Device::createBuffer(vk::DeviceSize size,
+                          vk::BufferUsageFlags usage,
                           vk::MemoryPropertyFlags properties,
-                          vk::Buffer& buffer, vk::DeviceMemory& bufferMemory) {
+                          vk::Buffer& buffer,
+                          vk::DeviceMemory& bufferMemory) {
   vk::BufferCreateInfo bufferInfo = {};
   bufferInfo.size = size;
   bufferInfo.usage = usage;
@@ -187,7 +191,8 @@ void Device::endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
   this->device->freeCommandBuffers(commandPool, commandBuffer);
 }
 
-void Device::copyBuffer(vk::Buffer sourceBuffer, vk::Buffer destinationBuffer,
+void Device::copyBuffer(vk::Buffer sourceBuffer,
+                        vk::Buffer destinationBuffer,
                         vk::DeviceSize size) {
   vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
 

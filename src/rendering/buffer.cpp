@@ -14,7 +14,9 @@ VkDeviceSize Buffer::getAlignment(VkDeviceSize instanceSize,
   return instanceSize;
 }
 
-Buffer::Buffer(Device& device, vk::DeviceSize instanceSize, u32 instanceCount,
+Buffer::Buffer(Device& device,
+               vk::DeviceSize instanceSize,
+               u32 instanceCount,
                vk::BufferUsageFlags usageFlags,
                vk::MemoryPropertyFlags memoryPropertyFlags,
                vk::DeviceSize minOffsetAlignment)
@@ -50,7 +52,8 @@ void Buffer::unmap() {
   }
 }
 
-void Buffer::writeToBuffer(void* data, vk::DeviceSize size,
+void Buffer::writeToBuffer(void* data,
+                           vk::DeviceSize size,
                            vk::DeviceSize offset) {
   assert(mapped && "Cannot copy to unmapped buffer");
 

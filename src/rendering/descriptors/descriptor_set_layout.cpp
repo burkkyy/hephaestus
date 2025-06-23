@@ -6,8 +6,10 @@
 namespace hep {
 
 DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::addBinding(
-    u32 binding, vk::DescriptorType descriptorType,
-    vk::ShaderStageFlags stageFlags, u32 count) {
+    u32 binding,
+    vk::DescriptorType descriptorType,
+    vk::ShaderStageFlags stageFlags,
+    u32 count) {
   assert(this->bindings.count(binding) == 0 && "binding already in use");
 
   vk::DescriptorSetLayoutBinding layoutBinding{binding, descriptorType, count,

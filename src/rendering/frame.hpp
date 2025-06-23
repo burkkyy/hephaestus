@@ -49,8 +49,11 @@ class Frame {
     vk::RenderPass renderPass;
   };
 
-  Frame(Device& device, vk::Extent2D extent, vk::Format format,
-        vk::ImageUsageFlags usage, vk::RenderPass renderPass);
+  Frame(Device& device,
+        vk::Extent2D extent,
+        vk::Format format,
+        vk::ImageUsageFlags usage,
+        vk::RenderPass renderPass);
   ~Frame();
 
   vk::Format getImageFormat() { return this->imageFormat; }

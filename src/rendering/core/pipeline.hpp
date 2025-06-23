@@ -40,7 +40,8 @@ class Pipeline {
 
   void create(const std::string& vertexShaderFilename,
               const std::string& fragmentShaderFilename,
-              vk::PipelineLayout pipelineLayout, vk::RenderPass renderPass);
+              vk::PipelineLayout pipelineLayout,
+              vk::RenderPass renderPass);
 
   void bind(vk::CommandBuffer commandBuffer);
 

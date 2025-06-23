@@ -10,7 +10,8 @@ DescriptorWriter::DescriptorWriter(DescriptorSetLayout& setLayout,
     : setLayout{setLayout}, pool{pool} {}
 
 DescriptorWriter& DescriptorWriter::writeBuffer(
-    u32 binding, vk::DescriptorBufferInfo* bufferInfo) {
+    u32 binding,
+    vk::DescriptorBufferInfo* bufferInfo) {
   assert(this->setLayout.bindings.count(binding) == 1 &&
          "setLayout does not contain specified binding");
 
@@ -30,7 +31,8 @@ DescriptorWriter& DescriptorWriter::writeBuffer(
 }
 
 DescriptorWriter& DescriptorWriter::writeImage(
-    u32 binding, vk::DescriptorImageInfo* imageInfo) {
+    u32 binding,
+    vk::DescriptorImageInfo* imageInfo) {
   assert(this->setLayout.bindings.count(binding) == 1 &&
          "setLayout does not contain specified binding");
 

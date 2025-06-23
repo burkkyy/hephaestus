@@ -17,8 +17,10 @@ class DescriptorSetLayout {
    public:
     Builder(Device& device) : device{device} {}
 
-    Builder& addBinding(u32 binding, vk::DescriptorType descriptorType,
-                        vk::ShaderStageFlags stageFlags, u32 count = 1);
+    Builder& addBinding(u32 binding,
+                        vk::DescriptorType descriptorType,
+                        vk::ShaderStageFlags stageFlags,
+                        u32 count = 1);
 
     std::unique_ptr<DescriptorSetLayout> build() const;
 
