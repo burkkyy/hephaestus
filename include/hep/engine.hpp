@@ -4,15 +4,14 @@
 
 namespace hep {
 
-#define WINDOW_WIDTH 400
-#define WINDOW_HEIGHT 400
+struct ApplicationConfig;
 
 class Engine {
  public:
   Engine(const Engine&) = delete;
   Engine& operator=(const Engine&) = delete;
 
-  Engine();
+  Engine(const ApplicationConfig& config);
   ~Engine();
 
   void run();
