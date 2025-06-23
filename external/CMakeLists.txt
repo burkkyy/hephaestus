@@ -42,12 +42,10 @@ add_library(imgui STATIC
 target_include_directories(imgui PUBLIC
   ${IMGUI_DIR}
   ${IMGUI_DIR}/backends
-  ${GLFW_INCLUDE_DIRS}
-  ${Vulkan_INCLUDE_DIRS}
 )
 
 target_link_libraries(imgui PUBLIC
-  ${GLFW_LIBRARIES}
+  glfw
   ${Vulkan_LIBRARIES}
 )
 
