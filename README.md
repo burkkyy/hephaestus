@@ -6,15 +6,10 @@ Cross platform general purpose GPU engine primarily designed for graphics applic
 
 ```cpp
 #include <hephaestus>
-#include <iostream>
 
 class MyApplication : public hep::Application {
  public:
   MyApplication(hep::ApplicationConfig config) : hep::Application(config) {}
-
-  void onStart(){
-    std::cout << "Hello world!" < std::endl;
-  }
 };
 
 int main() {
