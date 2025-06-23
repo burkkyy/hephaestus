@@ -50,6 +50,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxinerama-dev libxcursor-dev libxxf86vm-dev libxi-dev libgl1-mesa-dev
 
+      - name: Ensure Submodules are Up-to-Date
+        if: steps.cache-submodules.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git submodule update --init --recursive
+
       - name: Build Project
         uses: threeal/cmake-action@v2.1.0
         # Add any other CMake options your project needs
