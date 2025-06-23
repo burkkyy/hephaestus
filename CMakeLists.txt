@@ -27,7 +27,7 @@ elseif(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")  # Static runtime for MSVC
 endif()
 
-# Download git submodules
+# 1. Download git submodules
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   option(GIT_SUBMODULE "Check submodules during build" ON)
@@ -42,36 +42,23 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   endif()
 endif()
 
-# 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
-if (DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
-  set(Vulkan_FOUND "True")
-else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
-endif()
-if (NOT Vulkan_FOUND)
-	message(FATAL_ERROR "Could not find Vulkan library!")
-else()
-	message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
-endif()
-
+# 2. Add dependencies
 add_subdirectory(external)
 
 add_library(deps INTERFACE)
 
 target_link_libraries(deps INTERFACE
-  ${Vulkan_LIBRARIES}
+  vulkan
+  shaderc
   glfw
   glm
   imgui
 )
 
-# 5. Store source files
+# 3. Store source files
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
-# Platform specific
+# 4. Build project platform specific
 if(UNIX AND NOT APPLE)  # Linux
   message(STATUS "Creating build for linux")
 

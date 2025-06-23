@@ -1,19 +1,10 @@
-# 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
-if (DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
-  set(Vulkan_FOUND "True")
-else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
-endif()
-if (NOT Vulkan_FOUND)
-	message(FATAL_ERROR "Could not find Vulkan library!")
-else()
-	message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
-endif()
+# 1. Vulkan and other components
+add_library(vulkan INTERFACE)
 
-# 2. GLFW (static)
+find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
+target_link_libraries(vulkan INTERFACE Vulkan::Vulkan Vulkan::shaderc_combined)
+
+# 3. GLFW (static)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
@@ -22,11 +13,11 @@ option(GLFW_DOCUMENT_INTERNALS "Include internals in documentation" OFF)
 set(GLFW_VULKAN_STATIC ON CACHE BOOL "Link Vulkan statically with GLFW" FORCE)
 add_subdirectory(glfw)
 
-# 3. GLM (static)
+# 4. GLM (static)
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/glm)
 
-# 4. IMGUI (static)
+# 5. IMGUI (static)
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 
 add_library(imgui STATIC
@@ -45,9 +36,9 @@ target_include_directories(imgui PUBLIC
   ${Vulkan_INCLUDE_DIRS}
 )
 
-target_link_libraries(imgui PUBLIC
+target_link_libraries(imgui PRIVATE
   glfw
-  ${Vulkan_LIBRARIES}
+  vulkan
 )
 
 if(UNIX AND NOT APPLE)
