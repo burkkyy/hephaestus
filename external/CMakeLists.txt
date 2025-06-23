@@ -42,6 +42,7 @@ add_library(imgui STATIC
 target_include_directories(imgui PUBLIC
   ${IMGUI_DIR}
   ${IMGUI_DIR}/backends
+  ${Vulkan_INCLUDE_DIRS}
 )
 
 target_link_libraries(imgui PUBLIC
