@@ -1,33 +1,32 @@
 # hephaestus
 
-## Build Instructions
+Cross platform general purpose GPU engine designed for real-time graphics applications
+
+## Developing on the engine
+
+### Dependencies
+
+- [cmake](https://cmake.org/)
+- [Vulkan SDK](https://vulkan.lunarg.com/) - With validation layers
+
+> Quick Install for Ubuntu
+>
+> ```sh
+> sudo apt install cmake vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
+> ```
+
+### Build instructions
 
 ```sh
-mkdir -p build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cd build
-cmake ..
-make
-```
-
-## Dependencies
-
-- `cmake`
-- `vulkan-sdk`
-
-Install for Ubuntu
-
-```sh
-  sudo apt install vulkan-tools
-  sudo apt install libvulkan-dev
-  sudo apt install vulkan-validationlayers-dev spirv-tools
-  sudo apt install libglfw3-dev
-  sudo apt install libglm-dev
-  sudo apt install cmake
+make -j
 ```
 
 ## Long term goals
 
 - Buffered event system (oppesed to current blocking event system)
+- Full ECS implementation
 
 ## Resources
 
