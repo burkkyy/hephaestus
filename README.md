@@ -2,18 +2,45 @@
 
 Cross platform general purpose GPU engine designed for real-time graphics applications
 
+## Usage
+
+```cpp
+#include <hephaestus>
+#include <iostream>
+
+class MyApplication : public hep::Application {
+ public:
+  MyApplication(hep::ApplicationConfig) : hep::Application(config) {}
+
+  void onStart(){
+    std::cout << "Hello world!" < std::endl;
+  }
+};
+
+int main() {
+  hep::ApplicationConfig config {
+    .width = 600,
+    .height = 400,
+    .name = "My Application"
+  };
+
+  hep::Hephaestus heph(std::make_unique<MyApplication>(config));
+  heph.launch();
+
+  return 0;
+}
+```
+
+## Getting Started
+
+COMING SOON
+
 ## Developing on the engine
 
 ### Dependencies
 
 - [cmake](https://cmake.org/)
 - [Vulkan SDK](https://vulkan.lunarg.com/) - With validation layers
-
-> Quick Install for Ubuntu
->
-> ```sh
-> sudo apt install cmake vulkan-tools libvulkan-dev vulkan-validationlayers-dev spirv-tools
-> ```
 
 ### Build instructions
 
