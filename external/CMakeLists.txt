@@ -1,8 +1,21 @@
-# 1. Vulkan and other components
+# 1. Vulkan - shaderc, spirv-reflect
 add_library(vulkan INTERFACE)
 
 find_package(Vulkan REQUIRED COMPONENTS shaderc_combined)
-target_link_libraries(vulkan INTERFACE Vulkan::Vulkan Vulkan::shaderc_combined)
+
+# Adding SPIRV-Reflect to vulkan interface
+target_sources(vulkan INTERFACE 
+  ${Vulkan_INCLUDE_DIRS}/SPIRV-Reflect/spirv_reflect.c
+)
+
+target_include_directories(vulkan INTERFACE 
+  ${Vulkan_INCLUDE_DIRS}/SPIRV-Reflect
+)
+
+target_link_libraries(vulkan INTERFACE
+  Vulkan::Vulkan
+  Vulkan::shaderc_combined
+)
 
 # 3. GLFW (static)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
