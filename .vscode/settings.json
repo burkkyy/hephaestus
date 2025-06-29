@@ -106,7 +106,8 @@
     "stop_token": "cpp",
     "thread": "cpp",
     "cfenv": "cpp",
-    "typeindex": "cpp"
+    "typeindex": "cpp",
+    "queue": "cpp"
   },
   "files.exclude": {
     "**/.git": true,

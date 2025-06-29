@@ -2,9 +2,9 @@
 
 #include <vector>
 
+#include "core/device.hpp"
 #include "descriptor_pool.hpp"
 #include "descriptor_set_layout.hpp"
-#include "rendering/core/device.hpp"
 
 namespace hep {
 

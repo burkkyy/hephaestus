@@ -5,10 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "rendering/core/device.hpp"
-#include "rendering/core/window.hpp"
-#include "rendering/frame_info.hpp"
-#include "rendering/renderer.hpp"
+#include "core/device.hpp"
+#include "core/window.hpp"
+#include "frame_info.hpp"
+#include "renderer.hpp"
 #include "ui_component.hpp"
 
 namespace hep {

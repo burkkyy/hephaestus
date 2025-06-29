@@ -422,13 +422,20 @@ vk::PresentModeKHR Swapchain::choosePresentMode(
 
   for (const auto& availablePresentMode : availablePresentModes) {
     if (availablePresentMode == vk::PresentModeKHR::eMailbox) {
+      log::info("Selected present mode: MAILBOX (triple buffering)");
       return availablePresentMode;
     } else if (availablePresentMode == vk::PresentModeKHR::eImmediate) {
       bestMode = availablePresentMode;
     }
   }
-
   log::warning("Present mode MAILBOX not available.");
+
+  if (bestMode == vk::PresentModeKHR::eImmediate) {
+    log::info("Selected present mode: IMMEDIATE (no vsync)");
+  } else {
+    log::info("Selected present mode: FIFO (vsync)");
+  }
+
   return bestMode;
 }
 
