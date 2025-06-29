@@ -7,14 +7,14 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "rendering/core/device.hpp"
-#include "rendering/core/pipeline.hpp"
-#include "rendering/descriptors/descriptor_pool.hpp"
-#include "rendering/descriptors/descriptor_set_layout.hpp"
-#include "rendering/descriptors/descriptor_writer.hpp"
-#include "rendering/frame.hpp"
-#include "rendering/frame_info.hpp"
-#include "rendering/model.hpp"
+#include "core/device.hpp"
+#include "core/pipeline.hpp"
+#include "descriptors/descriptor_pool.hpp"
+#include "descriptors/descriptor_set_layout.hpp"
+#include "descriptors/descriptor_writer.hpp"
+#include "frame.hpp"
+#include "frame_info.hpp"
+#include "model.hpp"
 #include "ui/components/shader_art.hpp"
 
 namespace hep {

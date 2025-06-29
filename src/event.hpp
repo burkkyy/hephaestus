@@ -127,6 +127,7 @@ class EventSystem {
 
  private:
   EventSystem() { log::info("EventSystem Initialized: ", this); }
+  ~EventSystem() { log::info("EventSystem Destroyed"); }
 
   std::unordered_map<EventType, std::unique_ptr<std::any>> eventDelegates;
 };

@@ -11,16 +11,16 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include "buffer.hpp"
+#include "core/device.hpp"
+#include "core/window.hpp"
+#include "descriptors/descriptor_pool.hpp"
+#include "descriptors/descriptor_set_layout.hpp"
+#include "descriptors/descriptor_writer.hpp"
 #include "event.hpp"
+#include "frame_info.hpp"
 #include "input/key_event.hpp"
-#include "rendering/buffer.hpp"
-#include "rendering/core/device.hpp"
-#include "rendering/core/window.hpp"
-#include "rendering/descriptors/descriptor_pool.hpp"
-#include "rendering/descriptors/descriptor_set_layout.hpp"
-#include "rendering/descriptors/descriptor_writer.hpp"
-#include "rendering/frame_info.hpp"
-#include "rendering/renderer.hpp"
+#include "renderer.hpp"
 #include "systems/basic_render_system.hpp"
 #include "systems/shader_art_render_system.hpp"
 #include "ui/ui_system.hpp"
@@ -36,12 +36,12 @@ struct GlobalUbo {
   glm::mat4 projectionView{1.0f};
 };
 
-class Engine::Impl {
+class Engine {
  public:
-  Impl(const Impl&) = delete;
-  Impl& operator=(const Impl&) = delete;
+  Engine(const Engine&) = delete;
+  Engine& operator=(const Engine&) = delete;
 
-  explicit Impl(const ApplicationConfig& config)
+  explicit Engine(const ApplicationConfig& config)
       : window{config.width, config.height, config.name},
         device{this->window},
         renderer{this->window, this->device} {
@@ -63,7 +63,7 @@ class Engine::Impl {
             .build();
   }
 
-  ~Impl() = default;
+  ~Engine() = default;
 
   void run() {
     std::vector<std::unique_ptr<Buffer>> uboBuffers(
@@ -95,14 +95,14 @@ class Engine::Impl {
           .build(globalDescriptorSets.at(i));
     }
 
-    BasicRenderSystem basicRenderSystem{
-        this->device, this->renderer.getSwapChainRenderPass()};
+    // BasicRenderSystem basicRenderSystem{
+    //     this->device, this->renderer.getSwapChainRenderPass()};
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = startTime;
 
     EventSystem::get().addListener<KeyReleasedEvent>(
-        std::bind(&Impl::onEvent, this, std::placeholders::_1));
+        std::bind(&Engine::onEvent, this, std::placeholders::_1));
 
     this->ui = UISystem::Builder(this->window, this->device, this->renderer,
                                  this->imguiDescriptorPool->get())
@@ -116,9 +116,9 @@ class Engine::Impl {
     this->ui->setup();
     // basicRenderSystem.setup();
 
-    ShaderArtRenderSystem artRenderSystem{this->device, {500, 500}};
-    ShaderArtWindow shaderArtWindow;
-    shaderArtWindow.setup(artRenderSystem.getImageTextureID());
+    // ShaderArtRenderSystem artRenderSystem{this->device, {500, 500}};
+    // ShaderArtWindow shaderArtWindow;
+    // shaderArtWindow.setup(artRenderSystem.getImageTextureID());
 
     while (this->isRunning && !this->window.shouldClose()) {
       glfwPollEvents();
@@ -150,21 +150,21 @@ class Engine::Impl {
 
         this->ui->update(frameInfo);
 
-        artRenderSystem.render(commandBuffer, frameInfo);
+        // artRenderSystem.render(commandBuffer, frameInfo);
 
         // Render
         this->renderer.beginSwapChainRenderPass(commandBuffer);
 
-        shaderArtWindow.updateTextureId(artRenderSystem.getImageTextureID());
-        shaderArtWindow.draw(frameInfo);
-        basicRenderSystem.render(commandBuffer, frameInfo);
+        // shaderArtWindow.updateTextureId(artRenderSystem.getImageTextureID());
+        // shaderArtWindow.draw(frameInfo);
+        //  basicRenderSystem.render(commandBuffer, frameInfo);
         this->ui->render(commandBuffer);
 
         this->renderer.endSwapChainRenderPass(commandBuffer);
         this->renderer.endFrame();
 
         // Post Render
-        shaderArtWindow.postDraw();
+        // shaderArtWindow.postDraw();
       }
     }
 
@@ -190,12 +190,5 @@ class Engine::Impl {
 
   bool isRunning = true;
 };
-
-Engine::Engine(const ApplicationConfig& config)
-    : pImpl(std::make_unique<Impl>(config)) {}
-
-Engine::~Engine() = default;
-
-void Engine::run() { this->pImpl->run(); }
 
 }  // namespace hep

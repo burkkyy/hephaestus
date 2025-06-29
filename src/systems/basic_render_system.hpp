@@ -7,10 +7,10 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-#include "rendering/core/device.hpp"
-#include "rendering/core/pipeline.hpp"
-#include "rendering/frame_info.hpp"
-#include "rendering/model.hpp"
+#include "core/device.hpp"
+#include "core/pipeline.hpp"
+#include "frame_info.hpp"
+#include "model.hpp"
 
 namespace hep {
 

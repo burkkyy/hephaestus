@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "rendering/core/device.hpp"
+#include "core/device.hpp"
 
 namespace hep {
 
