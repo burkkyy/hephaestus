@@ -5,8 +5,10 @@
       "includePath": [
         "${workspaceFolder}/external/glfw/include",
         "${workspaceFolder}/external/glm",
-        "${workspaceFolder}/include",
-        "${workspaceFolder}/src"
+        "${workspaceFolder}/external/imgui",
+        "${workspaceFolder}/external/imgui/backends",
+        "${workspaceFolder}/engine/src",
+        "${workspaceFolder}/engine/include"
       ],
       "defines": [],
       "compilerPath": "/usr/bin/gcc",
@@ -15,8 +17,8 @@
       "intelliSenseMode": "linux-gcc-x64",
       "browse": {
         "path": [
-          "${workspaceFolder}/include",
-          "${workspaceFolder}/src",
+          "${workspaceFolder}/engine/src",
+          "${workspaceFolder}/engine/include",
           "${workspaceFolder}/external/glfw/include",
           "${workspaceFolder}/external/glm"
         ],
