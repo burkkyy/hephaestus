@@ -12,7 +12,7 @@
 
 #define HEP_VULKAN_API_VERSION VK_API_VERSION_1_3
 
-namespace hep {
+namespace alp {
 
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
@@ -131,4 +131,4 @@ class Device {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 
-}  // namespace hep
+}  // namespace alp

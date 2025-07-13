@@ -6,7 +6,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
@@ -502,4 +502,4 @@ void Device::createCommandPool() {
   }
 }
 
-}  // namespace hep
+}  // namespace alp

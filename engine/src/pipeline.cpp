@@ -5,7 +5,7 @@
 #include "model.hpp"
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 Pipeline::Pipeline(Device& device) : device{device} {
   setDefaultPipelineConfig();
@@ -192,4 +192,4 @@ vk::UniqueShaderModule Pipeline::createShaderModule(
   }
 }
 
-}  // namespace hep
+}  // namespace alp

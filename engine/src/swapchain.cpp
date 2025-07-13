@@ -5,7 +5,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 Swapchain::Swapchain(Device& device, vk::Extent2D extent)
     : device{device}, extent{extent} {
@@ -463,4 +463,4 @@ vk::Format Swapchain::findDepthFormat() {
       vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }
 
-}  // namespace hep
+}  // namespace alp

@@ -1,7 +1,7 @@
 #include "panel.hpp"
 
-namespace hep {
+namespace alp {
 
-void Panel::onUpdate() {}
+void Panel::onUpdate(const FrameInfo& frameInfo) {}
 
-}  // namespace hep
+}  // namespace alp

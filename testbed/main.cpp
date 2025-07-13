@@ -4,11 +4,12 @@
 #include <stdexcept>
 
 #include "application.hpp"
+#include "frame_info.hpp"
 #include "panel.hpp"
 
-class DebugPanel : public hep::Panel {
+class DebugPanel : public alp::Panel {
  public:
-  void onUpdate() override {
+  void onUpdate(const alp::FrameInfo& frameInfo) override {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, this->bgColor);
     ImGui::Begin("debug");
 
@@ -17,11 +18,10 @@ class DebugPanel : public hep::Panel {
       ImGui::TreePop();
     }
 
-    // ImGui::Text("ImGui average %.3f ms/frame (%.1f FPS)",
-    //             1000.0f / ImGui::GetIO().Framerate,
-    //             ImGui::GetIO().Framerate);
+    ImGui::Text("ImGui average %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    // ImGui::Text("elapsedTime: %.2f", frameInfo.elapsedTime);
+    ImGui::Text("elapsedTime: %.2f", frameInfo.elapsedTime);
 
     ImGui::Text("averageDeltaTime over 100 samples: %.4f ms",
                 this->averageDeltaTime * 1000.0f);
@@ -40,7 +40,7 @@ class DebugPanel : public hep::Panel {
       deltaTimeSamples = 0.0f;
       deltaTimeSamplesCount = 0;
     } else {
-      // deltaTimeSamples += frameInfo.deltaTime;
+      deltaTimeSamples += frameInfo.deltaTime;
       deltaTimeSamplesCount++;
     }
 
@@ -57,9 +57,9 @@ class DebugPanel : public hep::Panel {
   int deltaTimeSamplesCount = 0;
 };
 
-class TestbedPanel : public hep::Panel {
+class TestbedPanel : public alp::Panel {
  public:
-  void onUpdate() override {
+  void onUpdate(const alp::FrameInfo& frameInfo) override {
     ImGui::Begin("Testbed");
     ImGui::Text("This is a testbed panel");
     ImGui::End();
@@ -71,9 +71,10 @@ int main(int argc, const char** argv) {
   (void)argv;
   std::cout << __FILE__ << "::" << __LINE__ << '\n';
 
-  hep::Application app{{.width = 750, .height = 1000, .name = "Hep"}};
+  alp::Application app{{.width = 750, .height = 1000, .name = "Hep"}};
 
   app.registerPanel(std::make_unique<TestbedPanel>());
+  app.registerPanel(std::make_unique<DebugPanel>());
 
   app.run();
 

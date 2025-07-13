@@ -20,7 +20,7 @@ The engine provides a list of events you can create and dispatch.
 
 > builtin events found in `events/`, when I get to writing engine api doc include list of builin events?
 
-The `EventSystem` is a [singleton class](https://www.geeksforgeeks.org/singleton-class-java/) `hep::EventSystem` found in `#include "events/event.hpp`.
+The `EventSystem` is a [singleton class](https://www.geeksforgeeks.org/singleton-class-java/) `alp::EventSystem` found in `#include "events/event.hpp`.
 
 ```cpp
 class EventSystem {
@@ -32,7 +32,7 @@ class EventSystem {
 
   /**
    * @brief Adds a function as a listener for events of type E
-   * @tparam E Event type to listen for; must derive from hep::Event
+   * @tparam E Event type to listen for; must derive from alp::Event
    * @param f listener function for event E
    */
   template <class E>
@@ -40,7 +40,7 @@ class EventSystem {
 
   /**
    * @brief Adds a member function from class O as a listener for events of type E
-   * @tparam E Event type to listen for; must derive from hep::Event
+   * @tparam E Event type to listen for; must derive from alp::Event
    * @tparam O class defining memberFn (ignore since implicitly compiled)
    * @param memberFn pointer to a member function of O taking an E&
    * @param obj shared pointer to the instance of O owning the member function
@@ -51,7 +51,7 @@ class EventSystem {
 
   /**
    * @brief dispatches an event of type E to all registered listeners.
-   * @tparam E Event type to dispatch; must derive from hep::Event
+   * @tparam E Event type to dispatch; must derive from alp::Event
    * @param event reference to the event that will be passed to all listeners
    */
   template <class E>

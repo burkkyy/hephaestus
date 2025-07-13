@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-namespace hep {
+namespace alp {
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -23,4 +23,4 @@ using s64 = int64_t;
 using f32 = float;
 using f64 = double;
 
-}	// namespace hep
+}  // namespace alp

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.2)
 
-set(NAME hephaestus)
+set(NAME alphane)
 
 project(${NAME} VERSION 0.0.0)
 

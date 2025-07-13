@@ -1,6 +1,6 @@
 #include "descriptor_pool.hpp"
 
-namespace hep {
+namespace alp {
 
 DescriptorPool::Builder& DescriptorPool::Builder::addPoolSize(
     vk::DescriptorType descriptorType,
@@ -80,4 +80,4 @@ void DescriptorPool::resetPool() {
   this->device.get()->resetDescriptorPool(this->descriptorPool);
 }
 
-}  // namespace hep
+}  // namespace alp

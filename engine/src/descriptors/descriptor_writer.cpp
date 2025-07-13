@@ -3,7 +3,7 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace hep {
+namespace alp {
 
 DescriptorWriter::DescriptorWriter(DescriptorSetLayout& setLayout,
                                    DescriptorPool& pool)
@@ -67,4 +67,4 @@ void DescriptorWriter::overwrite(vk::DescriptorSet& set) {
                                                 nullptr);
 }
 
-}  // namespace hep
+}  // namespace alp

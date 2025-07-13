@@ -6,7 +6,7 @@
 
 #include "device.hpp"
 
-namespace hep {
+namespace alp {
 
 class DescriptorSetLayout {
  public:
@@ -46,4 +46,4 @@ class DescriptorSetLayout {
   friend class DescriptorWriter;
 };
 
-}  // namespace hep
+}  // namespace alp

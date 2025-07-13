@@ -3,7 +3,7 @@
 
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 enum class ShaderStage { VERTEX, FRAGMENT, COMPUTE };
 
@@ -22,4 +22,4 @@ class Shader {
   std::vector<u32> spirv;
 };
 
-}  // namespace hep
+}  // namespace alp

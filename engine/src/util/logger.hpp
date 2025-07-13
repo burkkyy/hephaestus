@@ -6,7 +6,7 @@
  * Lots of work still needs to be done in here.
  *
  * Usage:
- * using namespace hep;
+ * using namespace alp;
  * log::fatal("fatal message")
  * log::info("Infomation message")
  *
@@ -20,7 +20,7 @@
 
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 namespace log {
 
 enum class LEVEL {
@@ -129,4 +129,4 @@ void trace(Args... args) {
 }
 
 }  // namespace log
-}  // namespace hep
+}  // namespace alp

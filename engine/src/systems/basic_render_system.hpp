@@ -12,7 +12,7 @@
 #include "model.hpp"
 #include "pipeline.hpp"
 
-namespace hep {
+namespace alp {
 
 /*
  Still considering making this a base class for all other render systems.
@@ -51,4 +51,4 @@ class BasicRenderSystem {
   std::unique_ptr<Model> quad;
 };
 
-}  // namespace hep
+}  // namespace alp

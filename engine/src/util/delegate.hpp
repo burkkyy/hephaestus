@@ -11,7 +11,7 @@
 
 #define DEFAULT_DELEGATE_FUNCTOR_ALLOC 5
 
-namespace hep {
+namespace alp {
 
 class expired_weak_object : public std::runtime_error {
  public:
@@ -108,4 +108,4 @@ class Delegate {
   std::vector<Functor> functors;
 };
 
-}  // namespace hep
+}  // namespace alp

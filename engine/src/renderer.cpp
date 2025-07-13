@@ -2,7 +2,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 Renderer::Renderer(Window& window, Device& device)
     : window{window}, device{device} {
@@ -172,4 +172,4 @@ void Renderer::recreateSwapchain() {
   log::trace("recreated swapchain");
 }
 
-}  // namespace hep
+}  // namespace alp

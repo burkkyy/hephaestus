@@ -5,7 +5,7 @@
 #include "event.hpp"
 #include "key_codes.hpp"
 
-namespace hep {
+namespace alp {
 
 class KeyEvent : public Event {
  public:
@@ -67,4 +67,4 @@ class KeyTypedEvent : public KeyEvent {
   virtual const char* getName() const override { return "KeyTyped"; }
 };
 
-}  // namespace hep
+}  // namespace alp

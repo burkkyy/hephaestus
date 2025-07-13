@@ -5,11 +5,12 @@
 #include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
+#include "frame_info.hpp"
 #include "panel.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
-namespace hep {
+namespace alp {
 
 class UIManager {
  public:
@@ -38,11 +39,11 @@ class UIManager {
 
   void registerPanel(std::unique_ptr<Panel> panel);
 
-  void updatePanels();
+  void updatePanels(const FrameInfo& frameInfo);
   void renderPanels(vk::CommandBuffer commandBuffer);
 
  private:
   std::vector<std::unique_ptr<Panel>> panels;
 };
 
-}  // namespace hep
+}  // namespace alp

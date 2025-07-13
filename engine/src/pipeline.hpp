@@ -7,7 +7,7 @@
 #include "device.hpp"
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 struct PipelineConfig {
   PipelineConfig() = default;
@@ -54,4 +54,4 @@ class Pipeline {
   vk::Pipeline graphicsPipeline;
 };
 
-}  // namespace hep
+}  // namespace alp

@@ -5,7 +5,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 void Shader::compile(const std::string& path, ShaderStage shaderStage) {
   switch (shaderStage) {
@@ -52,4 +52,4 @@ void Shader::compile(const std::string& path, ShaderStage shaderStage) {
             std::to_string(spirv.size() * 4) + " bytes)");
 }
 
-}  // namespace hep
+}  // namespace alp

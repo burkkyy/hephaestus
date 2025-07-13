@@ -1,6 +1,8 @@
 #pragma once
 
-namespace hep {
+#include "frame_info.hpp"
+
+namespace alp {
 
 class Panel {
  public:
@@ -10,7 +12,7 @@ class Panel {
   Panel() = default;
   ~Panel() = default;
 
-  virtual void onUpdate();
+  virtual void onUpdate(const FrameInfo& frameInfo);
 };
 
-}  // namespace hep
+}  // namespace alp

@@ -6,7 +6,7 @@
 #include "descriptor_set_layout.hpp"
 #include "device.hpp"
 
-namespace hep {
+namespace alp {
 
 class DescriptorWriter {
  public:
@@ -25,4 +25,4 @@ class DescriptorWriter {
   std::vector<vk::WriteDescriptorSet> writes;
 };
 
-}  // namespace hep
+}  // namespace alp

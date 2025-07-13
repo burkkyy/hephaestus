@@ -5,7 +5,7 @@
 
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 using KeyCode = u32;
 
@@ -138,4 +138,4 @@ enum : KeyCode {
 
 }  // namespace Key
 
-}  // namespace hep
+}  // namespace alp

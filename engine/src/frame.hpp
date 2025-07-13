@@ -5,7 +5,7 @@
 
 #include "device.hpp"
 
-namespace hep {
+namespace alp {
 
 /**
  * Class for handling a render target
@@ -95,4 +95,4 @@ class Frame {
   vk::Framebuffer framebuffer;
 };
 
-}  // namespace hep
+}  // namespace alp

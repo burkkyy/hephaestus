@@ -2,7 +2,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 BasicRenderSystem::BasicRenderSystem(Device& device, vk::RenderPass renderPass)
     : device{device}, pipeline{device} {
@@ -77,4 +77,4 @@ void BasicRenderSystem::createPipeline(vk::RenderPass renderPass) {
                         renderPass);
 }
 
-}  // namespace hep
+}  // namespace alp

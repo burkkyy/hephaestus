@@ -91,7 +91,7 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "any": "cpp",
-    "hephaestus": "cpp",
+    "alphane": "cpp",
     "bitset": "cpp",
     "complex": "cpp",
     "condition_variable": "cpp",

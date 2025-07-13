@@ -4,7 +4,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-namespace hep {
+namespace alp {
 
 static void checkVkResult(VkResult result) {
   if (result == VK_SUCCESS) { return; }
@@ -97,7 +97,7 @@ void UIManager::registerPanel(std::unique_ptr<Panel> panel) {
   this->panels.push_back(std::move(panel));
 }
 
-void UIManager::updatePanels() {
+void UIManager::updatePanels(const FrameInfo& frameInfo) {
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
@@ -105,7 +105,7 @@ void UIManager::updatePanels() {
   ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(),
                                ImGuiDockNodeFlags_PassthruCentralNode);
 
-  for (auto& panel : panels) { panel->onUpdate(); }
+  for (auto& panel : panels) { panel->onUpdate(frameInfo); }
 }
 
 void UIManager::renderPanels(vk::CommandBuffer commandBuffer) {
@@ -121,4 +121,4 @@ void UIManager::renderPanels(vk::CommandBuffer commandBuffer) {
   ImGui_ImplVulkan_RenderDrawData(mainDrawData, commandBuffer);
 }
 
-}  // namespace hep
+}  // namespace alp

@@ -1,26 +1,16 @@
-# hephaestus
+# alphane
 
 Cross platform general purpose GPU engine primarily designed for graphics applications
 
 ## Usage
 
 ```cpp
-#include <hephaestus>
-
-class MyApplication : public hep::Application {
- public:
-  MyApplication(hep::ApplicationConfig config) : hep::Application(config) {}
-};
+#include "application.hpp"
 
 int main() {
-  hep::ApplicationConfig config {
-    .width = 600,
-    .height = 400,
-    .name = "My Application"
-  };
+  alp::Application app{{.width = 750, .height = 1000, .name = "Example"}};
 
-  hep::Hephaestus heph(std::make_unique<MyApplication>(config));
-  heph.launch();
+  app.run();
 
   return 0;
 }
@@ -42,7 +32,7 @@ COMING SOON
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cd build
-make -j
+make -j4
 ```
 
 ## Long term goals

@@ -8,7 +8,7 @@
 
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 struct FrameInfo {
   u32 frameIndex;
@@ -17,4 +17,4 @@ struct FrameInfo {
   glm::vec2 currentFramebufferExtent;
 };
 
-}  // namespace hep
+}  // namespace alp

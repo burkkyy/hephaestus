@@ -17,7 +17,7 @@
 #include <thread>
 #include <vulkan/vulkan.hpp>
 
-namespace hep {
+namespace alp {
 
 struct ApplicationConfig {
   int width;
@@ -46,10 +46,10 @@ class Application {
   Device device;
   Renderer renderer;
 
-  std::unique_ptr<hep::DescriptorPool> imguiDescriptorPool;
+  std::unique_ptr<alp::DescriptorPool> imguiDescriptorPool;
   std::unique_ptr<UIManager> uiManager;
 
   bool isRunning = true;
 };
 
-}  // namespace hep
+}  // namespace alp

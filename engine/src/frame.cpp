@@ -1,6 +1,6 @@
 #include "frame.hpp"
 
-namespace hep {
+namespace alp {
 
 std::unique_ptr<Frame> Frame::Builder::build() const {
   return std::make_unique<Frame>(this->device, this->imageExtent,
@@ -247,4 +247,4 @@ void Frame::destroyImageResources() {
   // log::trace("destroyed frame image resources");
 }
 
-}  // namespace hep
+}  // namespace alp

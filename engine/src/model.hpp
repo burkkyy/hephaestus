@@ -10,7 +10,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-namespace hep {
+namespace alp {
 
 class Model {
  public:
@@ -67,4 +67,4 @@ class Model {
   u32 indexCount;
 };
 
-}  // namespace hep
+}  // namespace alp

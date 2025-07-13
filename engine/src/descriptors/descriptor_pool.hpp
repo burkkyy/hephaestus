@@ -5,7 +5,7 @@
 
 #include "device.hpp"
 
-namespace hep {
+namespace alp {
 
 class DescriptorPool {
  public:
@@ -50,4 +50,4 @@ class DescriptorPool {
   friend class DescriptorWriter;
 };
 
-}  // namespace hep
+}  // namespace alp

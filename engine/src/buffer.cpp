@@ -4,7 +4,7 @@
  */
 #include "buffer.hpp"
 
-namespace hep {
+namespace alp {
 
 VkDeviceSize Buffer::getAlignment(VkDeviceSize instanceSize,
                                   VkDeviceSize minOffsetAlignment) {
@@ -107,4 +107,4 @@ vk::Result Buffer::invalidateIndex(int index) {
   return invalidate(alignmentSize, index * alignmentSize);
 }
 
-}  // namespace hep
+}  // namespace alp

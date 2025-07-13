@@ -16,7 +16,7 @@
 #include "model.hpp"
 #include "pipeline.hpp"
 
-namespace hep {
+namespace alp {
 
 /*
  Still considering making this a base class for all other render systems.
@@ -66,4 +66,4 @@ class ShaderArtRenderSystem {
   PushConstantData pushConstant;
 };
 
-}  // namespace hep
+}  // namespace alp

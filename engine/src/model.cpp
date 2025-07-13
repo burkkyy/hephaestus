@@ -4,7 +4,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 std::vector<vk::VertexInputBindingDescription>
 Model::Vertex::getBindingDescriptions() {
@@ -120,4 +120,4 @@ void Model::createIndexBuffers(const std::vector<u32>& indicies) {
                           this->indexBuffer->getBuffer(), bufferSize);
 }
 
-}  // namespace hep
+}  // namespace alp

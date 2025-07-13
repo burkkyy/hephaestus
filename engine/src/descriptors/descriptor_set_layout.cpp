@@ -3,7 +3,7 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace hep {
+namespace alp {
 
 DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::addBinding(
     u32 binding,
@@ -50,4 +50,4 @@ DescriptorSetLayout::~DescriptorSetLayout() {
   this->device.get()->destroyDescriptorSetLayout(this->layout);
 }
 
-}  // namespace hep
+}  // namespace alp

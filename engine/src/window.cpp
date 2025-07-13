@@ -3,7 +3,7 @@
 #include "key_event.hpp"
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 Window::Window(int width, int height, const std::string& name)
     : width{width}, height{height}, name{name} {
@@ -61,4 +61,4 @@ void Window::initialize() {
   glfwSetKeyCallback(this->window, keyEventCallback);
 }
 
-}  // namespace hep
+}  // namespace alp

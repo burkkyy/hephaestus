@@ -2,7 +2,7 @@
 
 #include "util/logger.hpp"
 
-namespace hep {
+namespace alp {
 
 ShaderArtRenderSystem::ShaderArtRenderSystem(Device& device,
                                              vk::Extent2D extent)
@@ -226,4 +226,4 @@ void ShaderArtRenderSystem::createImGuiTexture() {
   // log::trace("created imgui texture");
 }
 
-}  // namespace hep
+}  // namespace alp

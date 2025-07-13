@@ -7,7 +7,7 @@
 #include "device.hpp"
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 class Swapchain {
  public:
@@ -93,4 +93,4 @@ class Swapchain {
   size_t currentFrame = 0;
 };
 
-}  // namespace hep
+}  // namespace alp

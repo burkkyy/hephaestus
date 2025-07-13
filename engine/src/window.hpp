@@ -9,14 +9,14 @@
 #include "event.hpp"
 #include "types.hpp"
 
-namespace hep {
+namespace alp {
 
 class Window {
  public:
   Window(const Window&) = delete;
   Window& operator=(const Window&) = delete;
 
-  Window(int width, int height, const std::string& name = "hephaestus");
+  Window(int width, int height, const std::string& name = "alphane");
   ~Window();
 
   bool shouldClose() { return glfwWindowShouldClose(window); }
@@ -48,4 +48,4 @@ class Window {
   GLFWwindow* window;
 };
 
-}  // namespace hep
+}  // namespace alp

@@ -11,7 +11,7 @@
 
 #define BIT(x) (1 << (x))
 
-namespace hep {
+namespace alp {
 // https://github.com/TheCherno/Hazel/blob/1feb70572fa87fa1c4ba784a2cfeada5b4a500db/Hazel/src/Hazel/Events/Event.h
 
 enum EventCategoryFlags : u32 {
@@ -134,4 +134,4 @@ class EventSystem {
   std::unordered_map<EventType, std::unique_ptr<std::any>> eventDelegates;
 };
 
-}  // namespace hep
+}  // namespace alp

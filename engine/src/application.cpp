@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-namespace hep {
+namespace alp {
 
 Application::Application(const ApplicationConfig& config)
     : config{config},
@@ -55,7 +55,7 @@ void Application::run() {
                           deltaTime, extentVec2};
 
       /* ---- BEGIN UPDATE ----*/
-      uiManager->updatePanels();
+      uiManager->updatePanels(frameInfo);
       /* ---- END UPDATE ----*/
 
       this->renderer.beginSwapChainRenderPass(commandBuffer);
@@ -88,4 +88,4 @@ void Application::onEvent(KeyReleasedEvent& event) {
   }
 }
 
-}  // namespace hep
+}  // namespace alp

@@ -6,7 +6,7 @@
 
 #include "device.hpp"
 
-namespace hep {
+namespace alp {
 
 class Buffer {
  public:
@@ -68,4 +68,4 @@ class Buffer {
   vk::MemoryPropertyFlags memoryPropertyFlags;
 };
 
-}  // namespace hep
+}  // namespace alp

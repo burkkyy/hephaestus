@@ -8,7 +8,7 @@
 #include "types.hpp"
 #include "window.hpp"
 
-namespace hep {
+namespace alp {
 
 class Renderer {
  public:
@@ -71,4 +71,4 @@ class Renderer {
   bool isFrameStarted = false;
 };
 
-}  // namespace hep
+}  // namespace alp
