@@ -9,18 +9,18 @@
 namespace alp {
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
-debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT m_severity,
-              VkDebugUtilsMessageTypeFlagsEXT m_type,
-              const VkDebugUtilsMessengerCallbackDataEXT* pCallback_data,
+debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT m_severity,
+              vk::DebugUtilsMessageTypeFlagsEXT m_type,
+              const vk::DebugUtilsMessengerCallbackDataEXT* pCallback_data,
               void* pUser_data) {
   (void)m_type;
   (void)pCallback_data;
   (void)pUser_data;
 
-  if (m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+  if (m_severity == vk::DebugUtilsMessageSeverityFlagBitsEXT::eError) {
     log::error(pCallback_data->pMessage);
     return VK_SUCCESS;
-  } else if (m_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+  } else if (m_severity == vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning) {
     log::warning(pCallback_data->pMessage);
   } else {
     log::info(pCallback_data->pMessage);
@@ -267,8 +267,7 @@ void Device::setupDebugMessenger() {
 
   if (createDebugUtilsMessengerEXT(
           *instance,
-          reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(
-              &createInfo),
+          &static_cast<const VkDebugUtilsMessengerCreateInfoEXT&>(createInfo),
           nullptr, &this->debugMessenger) != VK_SUCCESS) {
     throw std::runtime_error("failed to set up debug callback!");
   }
