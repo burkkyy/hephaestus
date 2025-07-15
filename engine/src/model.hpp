@@ -34,14 +34,13 @@ class Model {
   /**
    * Helper struct
    *
-   * Temporarily stores vertices and indicies of a model before it
+   * Temporarily stores vertices and indices of a model before it
    * can be moved into the model's vertex buffer and index buffer respectively
    *
-   * TODO: move this documentation elsewhere (doc/ ?)
    */
   struct Builder {
     std::vector<Vertex> vertices{};
-    std::vector<u32> indicies{};
+    std::vector<u32> indices{};
   };
 
   Model(const Model&) = delete;
@@ -55,7 +54,7 @@ class Model {
 
  private:
   void createVertexBuffers(const std::vector<Vertex>& vertices);
-  void createIndexBuffers(const std::vector<u32>& indicies);
+  void createIndexBuffers(const std::vector<u32>& indices);
 
   Device& device;
 

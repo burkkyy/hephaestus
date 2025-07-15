@@ -1,11 +1,6 @@
 #include <imgui.h>
 
-#include <iostream>
-#include <stdexcept>
-
-#include "application.hpp"
-#include "frame_info.hpp"
-#include "panel.hpp"
+#include <alphane>
 
 class DebugPanel : public alp::Panel {
  public:
@@ -56,32 +51,3 @@ class DebugPanel : public alp::Panel {
   float deltaTimeSamples = 0.0f;
   int deltaTimeSamplesCount = 0;
 };
-
-class TestbedPanel : public alp::Panel {
- public:
-  void onUpdate(const alp::FrameInfo& frameInfo) override {
-    ImGui::Begin("Testbed");
-    ImGui::Text("This is a testbed panel");
-    ImGui::End();
-  }
-};
-
-int main(int argc, const char** argv) {
-  (void)argc;
-  (void)argv;
-  std::cout << __FILE__ << "::" << __LINE__ << '\n';
-
-  alp::Application app{{.width = 750, .height = 1000, .name = "Hep"}};
-
-  app.registerPanel(std::make_unique<TestbedPanel>());
-  app.registerPanel(std::make_unique<DebugPanel>());
-
-  app.addQuad({0.0f, 0.0f}, .2, .2);
-  app.addQuad({-1.0f, -1.0f}, .2, .2);
-  app.addQuad({.0f, -1.0f}, .2, .2);
-  app.addQuad({-1, 0}, .1, .1);
-
-  app.run();
-
-  return EXIT_SUCCESS;
-}

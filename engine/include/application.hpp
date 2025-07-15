@@ -3,7 +3,9 @@
 #include "event.hpp"
 #include "frame_info.hpp"
 #include "key_event.hpp"
+#include "render_systems/quad_render_system.hpp"
 #include "renderer.hpp"
+#include "scene.hpp"
 #include "ui_manager.hpp"
 #include "util/logger.hpp"
 #include "window.hpp"
@@ -37,6 +39,7 @@ class Application {
   void run();
 
   void registerPanel(std::unique_ptr<Panel> panel);
+  void addQuad(glm::vec2 position, float width, float height);
 
   void onEvent(KeyReleasedEvent& event);
 
@@ -48,6 +51,9 @@ class Application {
 
   std::unique_ptr<alp::DescriptorPool> imguiDescriptorPool;
   std::unique_ptr<UIManager> uiManager;
+
+  QuadRenderSystem quadRenderSystem;
+  Scene scene;
 
   bool isRunning = true;
 };

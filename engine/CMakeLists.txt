@@ -15,4 +15,5 @@ target_include_directories(${ENGINE_NAME} PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
   "${CMAKE_SOURCE_DIR}/external/imgui"
   "${CMAKE_SOURCE_DIR}/external/imgui/backends"
+  "${CMAKE_SOURCE_DIR}/external/entt/single_include"
 )

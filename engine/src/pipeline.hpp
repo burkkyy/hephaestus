@@ -43,11 +43,20 @@ class Pipeline {
               vk::PipelineLayout pipelineLayout,
               vk::RenderPass renderPass);
 
+  void create(unsigned char* vertexShaderSpv,
+              u32 vertexShaderSpvLen,
+              unsigned char* fragmentShaderSpv,
+              u32 fragmentShaderSpvLen,
+              vk::PipelineLayout pipelineLayout,
+              vk::RenderPass renderPass);
+
   void bind(vk::CommandBuffer commandBuffer);
 
  private:
   void setDefaultPipelineConfig();
   vk::UniqueShaderModule createShaderModule(const std::string& shaderFilename);
+  vk::UniqueShaderModule createShaderModule(unsigned char* shaderData,
+                                            u32 shaderDataLen);
 
   Device& device;
   PipelineConfig config;

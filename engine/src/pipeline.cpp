@@ -98,6 +98,90 @@ void Pipeline::create(const std::string& vertexShaderFilename,
   }
 }
 
+void Pipeline::create(unsigned char* vertexShaderSpv,
+                      u32 vertexShaderSpvLen,
+                      unsigned char* fragmentShaderSpv,
+                      u32 fragmentShaderSpvLen,
+                      vk::PipelineLayout pipelineLayout,
+                      vk::RenderPass renderPass) {
+  if (renderPass == VK_NULL_HANDLE) {
+    log::fatal(
+        "failed to create graphics pipeline: no vk::RenderPass provided");
+    throw std::runtime_error(
+        "failed to create graphics pipeline: no vk::RenderPass provided");
+  }
+
+  if (pipelineLayout == VK_NULL_HANDLE) {
+    log::fatal(
+        "failed to create graphics pipeline: no vk::PipelineLayout provided");
+    throw std::runtime_error(
+        "failed to create graphics pipeline: no vk::PipelineLayout provided");
+  }
+
+  if (this->graphicsPipeline) {
+    log::trace("destorying old vk::Pipeline");
+    this->device.get()->destroyPipeline(this->graphicsPipeline);
+  }
+
+  vk::UniqueShaderModule vertexShaderModule =
+      createShaderModule(vertexShaderSpv, vertexShaderSpvLen);
+  log::trace("created vertex shader module");
+
+  vk::UniqueShaderModule fragmentShaderModule =
+      createShaderModule(fragmentShaderSpv, fragmentShaderSpvLen);
+  log::trace("created fragment shader module");
+
+  vk::PipelineShaderStageCreateInfo shaderStages[] = {
+      {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex,
+       vertexShaderModule.get(), "main"},
+      {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment,
+       fragmentShaderModule.get(), "main"}};
+
+  auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
+  auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
+
+  vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
+  vertexInputInfo.vertexBindingDescriptionCount =
+      static_cast<u32>(bindingDescriptions.size());
+  vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+  vertexInputInfo.vertexAttributeDescriptionCount =
+      static_cast<u32>(attributeDescriptions.size());
+  vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+  vk::PipelineViewportStateCreateInfo viewportInfo = {};
+  viewportInfo.viewportCount = 1;
+  viewportInfo.pViewports = nullptr;
+  viewportInfo.scissorCount = 1;
+  viewportInfo.pScissors = nullptr;
+
+  vk::GraphicsPipelineCreateInfo pipelineInfo = {};
+  pipelineInfo.stageCount = 2;
+  pipelineInfo.pStages = shaderStages;
+  pipelineInfo.pVertexInputState = &vertexInputInfo;
+  pipelineInfo.pInputAssemblyState = &this->config.inputAssemblyInfo;
+  pipelineInfo.pViewportState = &viewportInfo;
+  pipelineInfo.pRasterizationState = &this->config.rasterizationInfo;
+  pipelineInfo.pMultisampleState = &this->config.multisampleInfo;
+  pipelineInfo.pDepthStencilState = &this->config.depthStencilInfo;
+  pipelineInfo.pColorBlendState = &this->config.colorBlendInfo;
+  pipelineInfo.pDynamicState = &this->config.dynamicStateInfo;
+
+  pipelineInfo.layout = pipelineLayout;
+  pipelineInfo.renderPass = renderPass;
+
+  pipelineInfo.subpass = 0;
+  pipelineInfo.basePipelineHandle = nullptr;
+
+  try {
+    this->graphicsPipeline =
+        this->device.get()->createGraphicsPipeline(nullptr, pipelineInfo).value;
+    log::trace("created vk::Pipeline");
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create vk::Pipeline");
+    throw std::runtime_error("failed to create vk::Pipeline");
+  }
+}
+
 void Pipeline::bind(vk::CommandBuffer commandBuffer) {
   commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics,
                              this->graphicsPipeline);
@@ -186,6 +270,18 @@ vk::UniqueShaderModule Pipeline::createShaderModule(
     return device.get()->createShaderModuleUnique(
         {vk::ShaderModuleCreateFlags(), buffer.size(),
          reinterpret_cast<const u32*>(buffer.data())});
+  } catch (const vk::SystemError& err) {
+    log::fatal("failed to create shader module");
+    throw std::runtime_error("failed to create shader module");
+  }
+}
+
+vk::UniqueShaderModule Pipeline::createShaderModule(unsigned char* shaderData,
+                                                    u32 shaderDataLen) {
+  try {
+    return device.get()->createShaderModuleUnique(
+        {vk::ShaderModuleCreateFlags(), shaderDataLen,
+         reinterpret_cast<const u32*>(shaderData)});
   } catch (const vk::SystemError& err) {
     log::fatal("failed to create shader module");
     throw std::runtime_error("failed to create shader module");

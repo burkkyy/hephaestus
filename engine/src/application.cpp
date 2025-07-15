@@ -6,7 +6,8 @@ Application::Application(const ApplicationConfig& config)
     : config{config},
       window{config.width, config.height, config.name},
       device{this->window},
-      renderer{this->window, this->device} {
+      renderer{this->window, this->device},
+      quadRenderSystem{this->device, this->renderer.getSwapChainRenderPass()} {
   this->imguiDescriptorPool =
       DescriptorPool::Builder(this->device)
           .addPoolSize(vk::DescriptorType::eCombinedImageSampler,
@@ -62,12 +63,15 @@ void Application::run() {
 
       /* ---- BEGIN RENDER ---- */
       uiManager->renderPanels(commandBuffer);
+      quadRenderSystem.render(commandBuffer, frameInfo);
       /* ---- END RENDER ---- */
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
       this->renderer.endFrame();
     }
   }
+
+  this->scene.onDetach();
 
   this->device.waitIdle();
 
@@ -79,6 +83,11 @@ void Application::run() {
 
 void Application::registerPanel(std::unique_ptr<Panel> panel) {
   uiManager->registerPanel(std::move(panel));
+}
+
+void Application::addQuad(glm::vec2 position, float width, float height) {
+  this->scene.createQuad(position, width, height);
+  this->quadRenderSystem.addQuad(position, width, height);
 }
 
 void Application::onEvent(KeyReleasedEvent& event) {

@@ -34,7 +34,7 @@ Model::Vertex::getAttributeDescriptions() {
 
 Model::Model(Device& device, const Builder& builder) : device{device} {
   createVertexBuffers(builder.vertices);
-  createIndexBuffers(builder.indicies);
+  createIndexBuffers(builder.indices);
 }
 
 Model::~Model() {}
@@ -88,15 +88,15 @@ void Model::createVertexBuffers(const std::vector<Vertex>& vertices) {
                           this->vertexBuffer->getBuffer(), bufferSize);
 }
 
-void Model::createIndexBuffers(const std::vector<u32>& indicies) {
-  this->indexCount = static_cast<u32>(indicies.size());
+void Model::createIndexBuffers(const std::vector<u32>& indices) {
+  this->indexCount = static_cast<u32>(indices.size());
   this->hasIndexBuffer = this->indexCount > 0;
 
   if (!this->hasIndexBuffer) { return; }
 
-  vk::DeviceSize bufferSize = sizeof(indicies[0]) * this->indexCount;
+  vk::DeviceSize bufferSize = sizeof(indices[0]) * this->indexCount;
 
-  u32 indexSize = sizeof(indicies[0]);
+  u32 indexSize = sizeof(indices[0]);
 
   Buffer stagingBuffer{
       this->device,
@@ -108,7 +108,7 @@ void Model::createIndexBuffers(const std::vector<u32>& indicies) {
   };
 
   stagingBuffer.map();
-  stagingBuffer.writeToBuffer((void*)indicies.data());
+  stagingBuffer.writeToBuffer((void*)indices.data());
 
   indexBuffer =
       std::make_unique<Buffer>(this->device, indexSize, indexCount,
