@@ -22,7 +22,11 @@ class Scene {
   Scene() = default;
   ~Scene() = default;
 
-  void onDetach();
+  virtual void onAttach();
+  virtual void onUpdate();
+  virtual void onRender();
+  virtual void onImGuiRender();
+  virtual void onDetach();
 
   void createQuad(glm::vec2 position, float width, float height);
 

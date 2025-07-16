@@ -5,10 +5,6 @@ layout (location = 1) in vec3 color;
 
 layout (location = 0) out vec3 fragColor;
 
-layout (set = 1, binding = 0) readonly buffer InstanceBuffer {
-  mat4 transforms[];
-} instanceBuffer;
-
 void main() {
   mat4 transform = instanceBuffer.transforms[gl_InstanceIndex];
   

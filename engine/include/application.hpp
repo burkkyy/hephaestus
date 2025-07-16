@@ -1,18 +1,18 @@
-#include "descriptors/descriptor_pool.hpp"
 #include "device.hpp"
 #include "event.hpp"
 #include "frame_info.hpp"
+#include "imgui_render_system.hpp"
 #include "key_event.hpp"
-#include "render_systems/quad_render_system.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
-#include "ui_manager.hpp"
+#include "scene_manager.hpp"
 #include "util/logger.hpp"
 #include "window.hpp"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <array>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -38,10 +38,9 @@ class Application {
 
   void run();
 
-  void registerPanel(std::unique_ptr<Panel> panel);
-  void addQuad(glm::vec2 position, float width, float height);
-
   void onEvent(KeyReleasedEvent& event);
+
+  void registerScene(std::unique_ptr<Scene> scene);
 
  private:
   ApplicationConfig config;
@@ -49,11 +48,9 @@ class Application {
   Device device;
   Renderer renderer;
 
-  std::unique_ptr<alp::DescriptorPool> imguiDescriptorPool;
-  std::unique_ptr<UIManager> uiManager;
+  ImGuiRenderSystem imGuiRenderSystem;
 
-  QuadRenderSystem quadRenderSystem;
-  Scene scene;
+  SceneManager sceneManager;
 
   bool isRunning = true;
 };

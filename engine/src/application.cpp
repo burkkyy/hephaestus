@@ -7,23 +7,7 @@ Application::Application(const ApplicationConfig& config)
       window{config.width, config.height, config.name},
       device{this->window},
       renderer{this->window, this->device},
-      quadRenderSystem{this->device, this->renderer.getSwapChainRenderPass()} {
-  this->imguiDescriptorPool =
-      DescriptorPool::Builder(this->device)
-          .addPoolSize(vk::DescriptorType::eCombinedImageSampler,
-                       IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE + 5)
-          .setPoolFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-          .setMaxSets(IMGUI_IMPL_VULKAN_MINIMUM_IMAGE_SAMPLER_POOL_SIZE + 5)
-          .build();
-
-  this->uiManager =
-      UIManager::Builder(this->window, this->device, this->renderer,
-                         imguiDescriptorPool->get())
-          .darkTheme()
-          .setDocking(true)
-          .setKeyboard(true)
-          .build();
-};
+      imGuiRenderSystem{this->window, this->device, this->renderer} {}
 
 Application::~Application() { this->device.waitIdle(); };
 
@@ -33,6 +17,8 @@ void Application::run() {
 
   EventSystem::get().addListener<KeyReleasedEvent>(
       std::bind(&Application::onEvent, this, std::placeholders::_1));
+
+  this->sceneManager.onAttachActiveScene();
 
   while (this->isRunning) {
     glfwPollEvents();
@@ -56,14 +42,17 @@ void Application::run() {
                           deltaTime, extentVec2};
 
       /* ---- BEGIN UPDATE ----*/
-      uiManager->updatePanels(frameInfo);
+      this->sceneManager.onUpdateActiveScene();
       /* ---- END UPDATE ----*/
 
       this->renderer.beginSwapChainRenderPass(commandBuffer);
 
       /* ---- BEGIN RENDER ---- */
-      uiManager->renderPanels(commandBuffer);
-      quadRenderSystem.render(commandBuffer, frameInfo);
+      this->sceneManager.onRenderActiveScene();
+
+      this->imGuiRenderSystem.beginFrame();
+      this->sceneManager.onImGuiRenderActiveScene();
+      this->imGuiRenderSystem.endFrame(commandBuffer);
       /* ---- END RENDER ---- */
 
       this->renderer.endSwapChainRenderPass(commandBuffer);
@@ -71,7 +60,7 @@ void Application::run() {
     }
   }
 
-  this->scene.onDetach();
+  this->sceneManager.onDetachActiveScene();
 
   this->device.waitIdle();
 
@@ -81,20 +70,15 @@ void Application::run() {
   log::info("Application ran for", totalRuntime, "s");
 }
 
-void Application::registerPanel(std::unique_ptr<Panel> panel) {
-  uiManager->registerPanel(std::move(panel));
-}
-
-void Application::addQuad(glm::vec2 position, float width, float height) {
-  this->scene.createQuad(position, width, height);
-  this->quadRenderSystem.addQuad(position, width, height);
-}
-
 void Application::onEvent(KeyReleasedEvent& event) {
   if (event.getKeyCode() == Key::Escape) {
     log::info("Escape key pressed. Quiting...");
     this->isRunning = false;
   }
+}
+
+void Application::registerScene(std::unique_ptr<Scene> scene) {
+  this->sceneManager.registerScene(std::move(scene));
 }
 
 }  // namespace alp

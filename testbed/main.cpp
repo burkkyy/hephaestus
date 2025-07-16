@@ -1,11 +1,24 @@
 #include <imgui.h>
 
+#include <alphane>
 #include <iostream>
 #include <stdexcept>
 
-#include "application.hpp"
-#include "frame_info.hpp"
-#include "panel.hpp"
+class TestbedScene : public alp::Scene {
+ public:
+  void onAttach() override {
+    createQuad({0.0f, 0.0f}, .2, .2);
+    createQuad({-1.0f, -1.0f}, .2, .2);
+    createQuad({.0f, -1.0f}, .2, .2);
+    createQuad({-1, 0}, .1, .1);
+  }
+
+  void onImGuiRender() override {
+    ImGui::Begin("Testbed Scene");
+    ImGui::Text("This is a window made from TestbedScene");
+    ImGui::End();
+  }
+};
 
 class DebugPanel : public alp::Panel {
  public:
@@ -72,14 +85,7 @@ int main(int argc, const char** argv) {
   std::cout << __FILE__ << "::" << __LINE__ << '\n';
 
   alp::Application app{{.width = 750, .height = 1000, .name = "Hep"}};
-
-  app.registerPanel(std::make_unique<TestbedPanel>());
-  app.registerPanel(std::make_unique<DebugPanel>());
-
-  app.addQuad({0.0f, 0.0f}, .2, .2);
-  app.addQuad({-1.0f, -1.0f}, .2, .2);
-  app.addQuad({.0f, -1.0f}, .2, .2);
-  app.addQuad({-1, 0}, .1, .1);
+  app.registerScene(std::make_unique<TestbedScene>());
 
   app.run();
 
